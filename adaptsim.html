@@ -1053,7 +1053,7 @@ function alphaSpendPocock(t, alpha) {
 function alphaSpendLanDeMets(t, alpha, rho) {
   if (t <= 0) return 0;
   if (t >= 1) return alpha;
-  return alpha * Math.pow(t, rho);
+  return Math.min(alpha, alpha * Math.pow(t, rho));
 }
 
 function alphaSpendHSD(t, alpha, gamma) {
@@ -1839,7 +1839,7 @@ function buildWorkerCode() {
     '        /* For independent increments: W_k = Z_k*sqrt(t_k) - Z_{k-1}*sqrt(t_{k-1}) ~ N(theta*dt*sqrt(maxN), dt) */',
     '',
     '        if (k === 0) {',
-    '          Z[k] = theta * Math.sqrt(t_k) + normalRandom(rng) * Math.sqrt(t_k);',
+    '          Z[k] = theta * Math.sqrt(t_k) + normalRandom(rng);',
     '        } else {',
     '          /* Conditional: Z_k | Z_{k-1} ~ N(Z_{k-1}*rho + theta*(t_k - t_{k-1})/sqrt(t_k), sigma^2) */',
     '          /* where rho = sqrt(t_{k-1}/t_k), sigma^2 = 1 - t_{k-1}/t_k */',
@@ -2451,6 +2451,14 @@ var STATE = {
     if (scenarios.length === 0) {
       alert('Please enter at least one scenario effect size.');
       return;
+    }
+    /* P1-1 FIX: validate effect sizes for ratio endpoints */
+    if (endpoint === 'tte' || endpoint === 'binary') {
+      var invalid = scenarios.filter(function(v) { return v <= 0; });
+      if (invalid.length > 0) {
+        alert('For ratio endpoints (HR/OR), effect sizes must be positive (e.g., 0.75 for HR=0.75).');
+        return;
+      }
     }
 
     /* Convert effect sizes to theta (drift parameter) */
