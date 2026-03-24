@@ -1,0 +1,2926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AdaptSim — Adaptive Trial Design Simulator</title>
+<style>
+/* ===== CSS Variables ===== */
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --bg-card: #ffffff;
+  --bg-hover: #f0f4f8;
+  --text-primary: #1a1a2e;
+  --text-secondary: #555770;
+  --text-muted: #8888a0;
+  --border: #e0e0e8;
+  --border-focus: #4361ee;
+  --accent: #4361ee;
+  --accent-hover: #3a56d4;
+  --accent-light: #e8edff;
+  --success: #2ecc71;
+  --warning: #f39c12;
+  --danger: #e74c3c;
+  --efficacy-color: #e74c3c;
+  --futility-color: #3498db;
+  --reject-region: rgba(231,76,60,0.12);
+  --continue-region: rgba(241,196,15,0.08);
+  --futility-region: rgba(52,152,219,0.12);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+  --transition: 0.2s ease;
+}
+
+body.dark {
+  --bg-primary: #0f0f1a;
+  --bg-secondary: #1a1a2e;
+  --bg-card: #16213e;
+  --bg-hover: #1e2a4a;
+  --text-primary: #e8e8f0;
+  --text-secondary: #b0b0c8;
+  --text-muted: #707090;
+  --border: #2a2a4a;
+  --border-focus: #6380f0;
+  --accent: #6380f0;
+  --accent-hover: #7a94f8;
+  --accent-light: #1a2040;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.2);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.3);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.4);
+  --reject-region: rgba(231,76,60,0.18);
+  --continue-region: rgba(241,196,15,0.12);
+  --futility-region: rgba(52,152,219,0.18);
+}
+
+/* ===== Reset & Base ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 15px; scroll-behavior: smooth; }
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  transition: background var(--transition), color var(--transition);
+  min-height: 100vh;
+}
+
+/* ===== Header ===== */
+.app-header {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  color: #fff;
+  padding: 1.8rem 2rem 1.2rem;
+  text-align: center;
+  position: relative;
+}
+body.dark .app-header {
+  background: linear-gradient(135deg, #0a0a14 0%, #0f1528 50%, #0a2040 100%);
+}
+.app-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin-bottom: 0.2rem;
+}
+.app-header h1 span { color: #6380f0; }
+.app-header .subtitle {
+  font-size: 0.95rem;
+  color: #b0c0e0;
+  font-weight: 400;
+}
+.theme-toggle {
+  position: absolute;
+  top: 1rem;
+  right: 1.5rem;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition);
+}
+.theme-toggle:hover, .theme-toggle:focus { background: rgba(255,255,255,0.25); outline: none; }
+
+/* ===== Examples Bar ===== */
+.examples-bar {
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.8rem 1rem;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.example-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+.example-btn:hover, .example-btn:focus {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+  outline: none;
+}
+
+/* ===== Tabs ===== */
+.tab-bar {
+  display: flex;
+  border-bottom: 2px solid var(--border);
+  background: var(--bg-secondary);
+  overflow-x: auto;
+}
+.tab-btn {
+  padding: 0.75rem 1.5rem;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  white-space: nowrap;
+  transition: all var(--transition);
+}
+.tab-btn:hover { color: var(--text-primary); background: var(--bg-hover); }
+.tab-btn:focus { outline: 2px solid var(--accent); outline-offset: -2px; }
+.tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+}
+.tab-panel { display: none; padding: 1.5rem; max-width: 1200px; margin: 0 auto; }
+.tab-panel.active { display: block; }
+
+/* ===== Cards ===== */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1.2rem 1.4rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow-sm);
+}
+.card-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.card-title .icon { font-size: 1.1rem; }
+
+/* ===== Forms ===== */
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.8rem;
+  margin-bottom: 0.6rem;
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.form-group label {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.form-group input, .form-group select {
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.88rem;
+  font-family: var(--font-sans);
+  transition: border var(--transition);
+}
+.form-group input:focus, .form-group select:focus {
+  border-color: var(--border-focus);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(67,97,238,0.15);
+}
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+  outline: none;
+  border: none;
+  padding: 0;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+}
+.range-value {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-align: right;
+}
+
+/* ===== Buttons ===== */
+.btn {
+  padding: 0.55rem 1.2rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+  font-family: var(--font-sans);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.btn:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-secondary { background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border); }
+.btn-secondary:hover { background: var(--bg-hover); }
+.btn-success { background: var(--success); color: #fff; }
+.btn-success:hover { opacity: 0.9; }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger:hover { opacity: 0.9; }
+.btn-sm { padding: 0.35rem 0.8rem; font-size: 0.78rem; }
+
+/* ===== Tables ===== */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.data-table th {
+  background: var(--bg-secondary);
+  font-weight: 600;
+  text-align: left;
+  padding: 0.6rem 0.8rem;
+  border-bottom: 2px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.data-table td {
+  padding: 0.55rem 0.8rem;
+  border-bottom: 1px solid var(--border);
+  font-variant-numeric: tabular-nums;
+}
+.data-table tr:hover { background: var(--bg-hover); }
+
+/* ===== SVG Charts ===== */
+.chart-container {
+  width: 100%;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+.chart-container svg {
+  display: block;
+  margin: 0 auto;
+}
+
+/* ===== Progress Bar ===== */
+.progress-bar-container {
+  width: 100%;
+  height: 8px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 0.6rem 0;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 4px;
+  transition: width 0.3s;
+  width: 0%;
+}
+
+/* ===== Code Block ===== */
+.code-block {
+  background: #1e1e2e;
+  color: #cdd6f4;
+  padding: 1rem 1.2rem;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  position: relative;
+}
+.code-block .copy-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: rgba(255,255,255,0.1);
+  color: #cdd6f4;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 4px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+.code-block .copy-btn:hover { background: rgba(255,255,255,0.2); }
+
+/* ===== Methods Text ===== */
+.methods-text {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1rem 1.2rem;
+  font-size: 0.88rem;
+  line-height: 1.7;
+  position: relative;
+}
+
+/* ===== Info Fraction Inputs ===== */
+.info-frac-inputs {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.info-frac-inputs input {
+  width: 70px;
+  text-align: center;
+  padding: 0.35rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+.info-frac-inputs input:focus {
+  border-color: var(--border-focus);
+  outline: none;
+}
+.info-frac-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  min-width: 40px;
+  text-align: center;
+}
+
+/* ===== Scenario Grid ===== */
+.scenario-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.5rem;
+}
+.scenario-grid input {
+  padding: 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  text-align: center;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* ===== Status Badge ===== */
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 10px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+.badge-pass { background: #d4edda; color: #155724; }
+.badge-warn { background: #fff3cd; color: #856404; }
+body.dark .badge-pass { background: #1a3a2a; color: #6abb8a; }
+body.dark .badge-warn { background: #3a3020; color: #d4a030; }
+
+/* ===== Print ===== */
+@media print {
+  .app-header, .examples-bar, .tab-bar, .theme-toggle, .btn, .copy-btn { display: none !important; }
+  .tab-panel { display: block !important; padding: 0.5cm; }
+  .card { break-inside: avoid; border: 1px solid #ccc; box-shadow: none; }
+  body { background: #fff; color: #000; font-size: 10pt; }
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .form-row { grid-template-columns: 1fr; }
+  .tab-btn { padding: 0.6rem 0.8rem; font-size: 0.8rem; }
+  .app-header h1 { font-size: 1.5rem; }
+  .tab-panel { padding: 1rem; }
+}
+
+/* ===== Spending Function Preview ===== */
+.spending-preview {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.spending-preview .chart-container { flex: 1; min-width: 280px; }
+
+/* ===== Overlay selector ===== */
+.overlay-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.8rem;
+  flex-wrap: wrap;
+}
+.overlay-row label { font-size: 0.82rem; font-weight: 500; color: var(--text-secondary); }
+.overlay-row select {
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+}
+
+/* ===== Scale Toggle ===== */
+.scale-toggle {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.scale-toggle button {
+  padding: 0.3rem 0.7rem;
+  border: none;
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.scale-toggle button.active {
+  background: var(--accent);
+  color: #fff;
+}
+.scale-toggle button:focus { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+/* ===== SSR Zones Visual ===== */
+.zone-indicator {
+  display: flex;
+  height: 24px;
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 0.5rem 0;
+}
+.zone-indicator .zone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #fff;
+}
+.zone-unfav { background: #95a5a6; }
+.zone-promising { background: #f39c12; }
+.zone-favorable { background: #2ecc71; }
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header class="app-header">
+  <h1>Adapt<span>Sim</span></h1>
+  <div class="subtitle">Adaptive Group-Sequential Trial Design Simulator</div>
+  <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark/light mode">&#9790;</button>
+</header>
+
+<!-- ===== EXAMPLES BAR ===== -->
+<div class="examples-bar">
+  <span style="font-size:0.82rem;color:var(--text-muted);font-weight:500;padding:0.4rem 0;">Built-in examples:</span>
+  <button class="example-btn" id="exDapaHF" aria-label="Load DAPA-HF example">DAPA-HF</button>
+  <button class="example-btn" id="exEmperor" aria-label="Load EMPEROR-Reduced example">EMPEROR-Reduced</button>
+  <button class="example-btn" id="exSprint" aria-label="Load SPRINT example">SPRINT</button>
+</div>
+
+<!-- ===== TAB BAR ===== -->
+<nav class="tab-bar" role="tablist">
+  <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="panel-design" id="tab-design" data-tab="design">Design</button>
+  <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-boundaries" id="tab-boundaries" data-tab="boundaries">Boundaries</button>
+  <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-oc" id="tab-oc" data-tab="oc">Operating Characteristics</button>
+  <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-ssr" id="tab-ssr" data-tab="ssr">Sample Size Re-estimation</button>
+  <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-report" id="tab-report" data-tab="report">Report</button>
+</nav>
+
+<!-- ===== TAB 1: DESIGN ===== -->
+<div class="tab-panel active" id="panel-design" role="tabpanel" aria-labelledby="tab-design">
+
+  <div class="card">
+    <div class="card-title"><span class="icon">&#9881;</span> Trial Parameters</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="endpointType">Endpoint Type</label>
+        <select id="endpointType">
+          <option value="tte">Time-to-Event (HR)</option>
+          <option value="binary">Binary (OR)</option>
+          <option value="continuous">Continuous (MD)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="effectSize" id="effectSizeLabel">Hazard Ratio (HR)</label>
+        <input type="number" id="effectSize" value="0.74" step="0.01" min="0.01" max="2.0">
+      </div>
+      <div class="form-group">
+        <label for="alphaInput">Alpha (type I error)</label>
+        <input type="number" id="alphaInput" value="0.025" step="0.005" min="0.001" max="0.1">
+      </div>
+      <div class="form-group">
+        <label for="sidedness">Sidedness</label>
+        <select id="sidedness">
+          <option value="one" selected>One-sided</option>
+          <option value="two">Two-sided</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="targetPower">Target Power</label>
+        <input type="number" id="targetPower" value="0.80" step="0.05" min="0.50" max="0.99">
+      </div>
+      <div class="form-group">
+        <label for="maxEvents" id="maxEventsLabel">Max Events / Sample Size</label>
+        <input type="number" id="maxEvents" value="800" step="10" min="10" max="100000">
+      </div>
+      <div class="form-group">
+        <label for="allocRatio">Allocation Ratio</label>
+        <select id="allocRatio">
+          <option value="1" selected>1:1</option>
+          <option value="2">2:1</option>
+          <option value="3">3:1</option>
+        </select>
+      </div>
+      <div class="form-group" id="controlRateGroup" style="display:none;">
+        <label for="controlRate">Control Event Rate</label>
+        <input type="number" id="controlRate" value="0.20" step="0.01" min="0.01" max="0.99">
+      </div>
+    </div>
+    <div class="form-row" id="continuousParamsRow" style="display:none;">
+      <div class="form-group">
+        <label for="sdInput">Common SD</label>
+        <input type="number" id="sdInput" value="1.0" step="0.1" min="0.01" max="100">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon">&#128200;</span> Interim Schedule</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="numLooks">Number of Looks (including final): <span id="numLooksVal" class="range-value">2</span></label>
+        <input type="range" id="numLooks" min="1" max="5" value="2" step="1">
+      </div>
+      <div class="form-group">
+        <label>
+          <input type="checkbox" id="customInfoFrac" style="margin-right:4px;"> Custom Information Fractions
+        </label>
+      </div>
+    </div>
+    <div id="infoFracContainer" class="info-frac-inputs" style="margin-top:0.5rem;">
+      <!-- Filled dynamically -->
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon">&#9650;</span> Efficacy Spending Function</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="efficacySpending">Spending Function</label>
+        <select id="efficacySpending">
+          <option value="obf" selected>O'Brien-Fleming</option>
+          <option value="pocock">Pocock</option>
+          <option value="landemets">Lan-DeMets (rho)</option>
+          <option value="hsd">Hwang-Shih-DeCani (gamma)</option>
+        </select>
+      </div>
+      <div class="form-group" id="efficacyParamGroup" style="display:none;">
+        <label for="efficacyParam" id="efficacyParamLabel">rho</label>
+        <input type="number" id="efficacyParam" value="3" step="0.5" min="0.5" max="10">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon">&#9660;</span> Futility Boundary</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="futilityType">Futility Type</label>
+        <select id="futilityType">
+          <option value="none">None</option>
+          <option value="binding">Binding</option>
+          <option value="nonbinding" selected>Non-binding</option>
+        </select>
+      </div>
+      <div class="form-group" id="futilitySpendingGroup">
+        <label for="futilitySpending">Futility Spending Function</label>
+        <select id="futilitySpending">
+          <option value="obf">O'Brien-Fleming</option>
+          <option value="pocock">Pocock</option>
+          <option value="landemets" selected>Lan-DeMets (rho)</option>
+          <option value="hsd">Hwang-Shih-DeCani (gamma)</option>
+        </select>
+      </div>
+      <div class="form-group" id="futilityParamGroup">
+        <label for="futilityParam" id="futilityParamLabel">rho</label>
+        <input type="number" id="futilityParam" value="1" step="0.5" min="0.5" max="10">
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center;margin-top:1rem;">
+    <button class="btn btn-primary" id="computeBtn">Compute Boundaries</button>
+  </div>
+</div>
+
+<!-- ===== TAB 2: BOUNDARIES ===== -->
+<div class="tab-panel" id="panel-boundaries" role="tabpanel" aria-labelledby="tab-boundaries">
+  <div class="card">
+    <div class="card-title"><span class="icon">&#128202;</span> Boundary Plot</div>
+    <div class="overlay-row">
+      <div class="scale-toggle" id="scaleToggle">
+        <button class="active" data-scale="z" aria-label="Z-value scale">Z-value</button>
+        <button data-scale="p" aria-label="p-value scale">p-value</button>
+        <button data-scale="effect" aria-label="Effect scale">Effect</button>
+      </div>
+      <label for="overlaySpending">Compare with:</label>
+      <select id="overlaySpending">
+        <option value="none">-- None --</option>
+        <option value="obf">O'Brien-Fleming</option>
+        <option value="pocock">Pocock</option>
+        <option value="landemets">Lan-DeMets</option>
+        <option value="hsd">HSD</option>
+      </select>
+    </div>
+    <div class="chart-container" id="boundaryChartContainer">
+      <svg id="boundaryChart" width="700" height="420" viewBox="0 0 700 420"></svg>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon">&#128203;</span> Boundary Table</div>
+    <div style="overflow-x:auto;">
+      <table class="data-table" id="boundaryTable">
+        <thead>
+          <tr>
+            <th>Look</th>
+            <th>Info Fraction</th>
+            <th>Z (efficacy)</th>
+            <th>Z (futility)</th>
+            <th>Nominal p (eff.)</th>
+            <th>Nominal p (fut.)</th>
+            <th>Cum. Alpha Spent</th>
+          </tr>
+        </thead>
+        <tbody id="boundaryTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAB 3: OPERATING CHARACTERISTICS ===== -->
+<div class="tab-panel" id="panel-oc" role="tabpanel" aria-labelledby="tab-oc">
+  <div class="card">
+    <div class="card-title"><span class="icon">&#127919;</span> Scenarios</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label id="scenarioLabel">True Effect Sizes (comma-separated HRs)</label>
+        <input type="text" id="scenarioEffects" value="1.0, 0.90, 0.80, 0.74, 0.65" style="width:100%;">
+      </div>
+      <div class="form-group">
+        <label for="numSims">Simulations</label>
+        <select id="numSims">
+          <option value="10000">10,000</option>
+          <option value="50000" selected>50,000</option>
+          <option value="100000">100,000</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="simSeed">Random Seed</label>
+        <input type="number" id="simSeed" value="42" min="1" max="999999">
+      </div>
+    </div>
+    <div style="display:flex;gap:0.5rem;margin-top:0.5rem;">
+      <button class="btn btn-primary" id="runSimBtn">Run Simulation</button>
+      <button class="btn btn-danger" id="cancelSimBtn" style="display:none;">Cancel</button>
+    </div>
+    <div class="progress-bar-container" id="simProgress" style="display:none;">
+      <div class="progress-bar-fill" id="simProgressFill"></div>
+    </div>
+    <div id="simStatus" style="font-size:0.82rem;color:var(--text-muted);margin-top:0.3rem;"></div>
+  </div>
+
+  <div id="ocResults" style="display:none;">
+    <div class="card">
+      <div class="card-title"><span class="icon">&#9889;</span> Power Curve</div>
+      <div class="chart-container" id="powerChartContainer">
+        <svg id="powerChart" width="700" height="380" viewBox="0 0 700 380"></svg>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">&#128201;</span> Expected Sample Size (ASN)</div>
+      <div class="chart-container" id="asnChartContainer">
+        <svg id="asnChart" width="700" height="380" viewBox="0 0 700 380"></svg>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">&#128202;</span> Stopping Probabilities</div>
+      <div class="chart-container" id="stoppingChartContainer">
+        <svg id="stoppingChart" width="700" height="350" viewBox="0 0 700 350"></svg>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">&#128203;</span> OC Summary Table</div>
+      <div style="overflow-x:auto;">
+        <table class="data-table" id="ocTable">
+          <thead><tr id="ocTableHead"></tr></thead>
+          <tbody id="ocTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAB 4: SSR ===== -->
+<div class="tab-panel" id="panel-ssr" role="tabpanel" aria-labelledby="tab-ssr">
+  <div class="card">
+    <div class="card-title"><span class="icon">&#128260;</span> Sample Size Re-estimation Settings</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="ssrLook">SSR Trigger Look</label>
+        <select id="ssrLook">
+          <option value="1">Look 1</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="ssrMethod">SSR Method</label>
+        <select id="ssrMethod">
+          <option value="cp" selected>Conditional Power (CHW)</option>
+          <option value="promising">Promising Zone (Chen-DeMets-Lan)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="ssrTargetCP">Target Conditional Power</label>
+        <input type="number" id="ssrTargetCP" value="0.80" step="0.05" min="0.5" max="0.99">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="ssrCPLow">Promising Zone Lower (CP)</label>
+        <input type="number" id="ssrCPLow" value="0.36" step="0.01" min="0.0" max="1.0">
+      </div>
+      <div class="form-group">
+        <label for="ssrCPHigh">Promising Zone Upper (CP)</label>
+        <input type="number" id="ssrCPHigh" value="0.80" step="0.01" min="0.0" max="1.0">
+      </div>
+      <div class="form-group">
+        <label for="ssrMaxFold">Max Fold Increase</label>
+        <input type="number" id="ssrMaxFold" value="2.0" step="0.1" min="1.0" max="5.0">
+      </div>
+    </div>
+    <div style="margin-top:0.5rem;">
+      <div class="zone-indicator" id="zoneIndicator">
+        <div class="zone zone-unfav" style="width:36%">Unfavorable</div>
+        <div class="zone zone-promising" style="width:44%">Promising</div>
+        <div class="zone zone-favorable" style="width:20%">Favorable</div>
+      </div>
+    </div>
+    <div style="margin-top:0.8rem;">
+      <button class="btn btn-primary" id="runSSRBtn">Run SSR Simulation</button>
+      <button class="btn btn-danger" id="cancelSSRBtn" style="display:none;">Cancel</button>
+    </div>
+    <div class="progress-bar-container" id="ssrProgress" style="display:none;">
+      <div class="progress-bar-fill" id="ssrProgressFill"></div>
+    </div>
+    <div id="ssrStatus" style="font-size:0.82rem;color:var(--text-muted);margin-top:0.3rem;"></div>
+  </div>
+
+  <div id="ssrResults" style="display:none;">
+    <div class="card">
+      <div class="card-title"><span class="icon">&#128202;</span> SSR Comparison: Fixed vs Adaptive</div>
+      <div class="chart-container" id="ssrChartContainer">
+        <svg id="ssrChart" width="700" height="380" viewBox="0 0 700 380"></svg>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">&#128203;</span> SSR Summary</div>
+      <div style="overflow-x:auto;">
+        <table class="data-table" id="ssrTable">
+          <thead>
+            <tr>
+              <th>True Effect</th>
+              <th>Fixed Power</th>
+              <th>SSR Power</th>
+              <th>Fixed ASN</th>
+              <th>SSR ASN</th>
+              <th>SSR Triggered (%)</th>
+              <th>Mean Fold Increase</th>
+            </tr>
+          </thead>
+          <tbody id="ssrTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAB 5: REPORT ===== -->
+<div class="tab-panel" id="panel-report" role="tabpanel" aria-labelledby="tab-report">
+  <div class="card">
+    <div class="card-title"><span class="icon">&#128221;</span> Methods Text</div>
+    <div class="methods-text" id="methodsText">
+      <em>Compute boundaries first to generate methods text.</em>
+    </div>
+    <div style="margin-top:0.5rem;">
+      <button class="btn btn-sm btn-secondary" id="copyMethodsBtn">Copy Text</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon">&#128203;</span> Boundary Table (Protocol Appendix)</div>
+    <div style="overflow-x:auto;" id="reportBoundaryTable">
+      <em>Compute boundaries first.</em>
+    </div>
+    <div style="margin-top:0.5rem;">
+      <button class="btn btn-sm btn-secondary" id="copyBoundaryTableBtn">Copy Table</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon">&#128187;</span> R Code (rpact)</div>
+    <div class="code-block" id="rCodeBlock">
+      <button class="copy-btn" id="copyRCodeBtn">Copy</button>
+      <span id="rCodeContent"># Compute boundaries first to generate R code.</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon">&#128187;</span> R Code (gsDesign)</div>
+    <div class="code-block" id="gsDesignCodeBlock">
+      <button class="copy-btn" id="copyGsDesignBtn">Copy</button>
+      <span id="gsDesignCodeContent"># Compute boundaries first to generate R code.</span>
+    </div>
+  </div>
+</div>
+
+<footer style="text-align:center;padding:1.5rem;font-size:0.78rem;color:var(--text-muted);border-top:1px solid var(--border);">
+  AdaptSim v1.0 &mdash; Open-access adaptive trial design simulator. No server dependency, all computations in-browser.
+</footer>
+
+<script>
+/* ===========================================================================
+   AdaptSim — Complete JavaScript Engine
+   ===========================================================================
+   Structure:
+   1. Utility functions (escapeHtml, PRNG, math)
+   2. Normal distribution (CDF, quantile, PDF)
+   3. Alpha spending functions
+   4. Boundary computation (Armitage-McPherson-Rowe)
+   5. SVG chart rendering
+   6. Monte Carlo simulation (Web Worker)
+   7. SSR engine
+   8. Report generation
+   9. UI wiring & event handlers
+   =========================================================================== */
+
+'use strict';
+
+/* ===== 1. UTILITIES ===== */
+
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
+
+/* Seeded PRNG: xoshiro128** */
+function xoshiro128ss(a, b, c, d) {
+  return function() {
+    var t = b << 9, r = b * 5;
+    r = (r << 7 | r >>> 25) * 9;
+    c ^= a; d ^= b; b ^= c; a ^= d;
+    c ^= t;
+    d = d << 11 | d >>> 21;
+    return (r >>> 0) / 4294967296;
+  };
+}
+
+function seedPRNG(seed) {
+  /* splitmix32 to generate initial state from a single seed */
+  function sm32(a) {
+    return function() {
+      a |= 0; a = a + 0x9e3779b9 | 0;
+      var t = a ^ a >>> 16; t = Math.imul(t, 0x21f0aaad);
+      t = t ^ t >>> 15; t = Math.imul(t, 0x735a2d97);
+      return ((t = t ^ t >>> 15) >>> 0);
+    };
+  }
+  var sm = sm32(seed);
+  return xoshiro128ss(sm(), sm(), sm(), sm());
+}
+
+function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
+function fmt(v, d) { return v == null ? '-' : v.toFixed(d != null ? d : 4); }
+
+/* ===== 2. NORMAL DISTRIBUTION ===== */
+
+/* Standard normal CDF via rational approximation (Abramowitz & Stegun 26.2.17) */
+function normalCDF(x) {
+  if (x < -8) return 0;
+  if (x > 8) return 1;
+  var neg = x < 0;
+  if (neg) x = -x;
+  var p = 0.2316419;
+  var b1 = 0.319381530, b2 = -0.356563782, b3 = 1.781477937, b4 = -1.821255978, b5 = 1.330274429;
+  var t = 1.0 / (1.0 + p * x);
+  var t2 = t * t, t3 = t2 * t, t4 = t3 * t, t5 = t4 * t;
+  var pdf = Math.exp(-0.5 * x * x) / Math.sqrt(2 * Math.PI);
+  var cdf = 1.0 - pdf * (b1 * t + b2 * t2 + b3 * t3 + b4 * t4 + b5 * t5);
+  return neg ? 1 - cdf : cdf;
+}
+
+/* Standard normal PDF */
+function normalPDF(x) {
+  return Math.exp(-0.5 * x * x) / Math.sqrt(2 * Math.PI);
+}
+
+/* Inverse normal (Beasley-Springer-Moro algorithm) */
+function normalQuantile(p) {
+  if (p <= 0) return -Infinity;
+  if (p >= 1) return Infinity;
+  if (p === 0.5) return 0;
+
+  var a = [
+    -3.969683028665376e+01, 2.209460984245205e+02,
+    -2.759285104469687e+02, 1.383577518672690e+02,
+    -3.066479806614716e+01, 2.506628277459239e+00
+  ];
+  var b = [
+    -5.447609879822406e+01, 1.615858368580409e+02,
+    -1.556989798598866e+02, 6.680131188771972e+01,
+    -1.328068155288572e+01
+  ];
+  var c = [
+    -7.784894002430293e-03, -3.223964580411365e-01,
+    -2.400758277161838e+00, -2.549732539343734e+00,
+     4.374664141464968e+00, 2.938163982698783e+00
+  ];
+  var d = [
+    7.784695709041462e-03, 3.224671290700398e-01,
+    2.445134137142996e+00, 3.754408661907416e+00
+  ];
+
+  var pLow = 0.02425, pHigh = 1 - pLow;
+  var q, r;
+
+  if (p < pLow) {
+    q = Math.sqrt(-2 * Math.log(p));
+    return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) /
+            ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
+  } else if (p <= pHigh) {
+    q = p - 0.5;
+    r = q * q;
+    return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5]) * q /
+           (((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);
+  } else {
+    q = Math.sqrt(-2 * Math.log(1 - p));
+    return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) /
+             ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
+  }
+}
+
+/* Box-Muller normal random using seeded PRNG */
+function normalRandom(rng) {
+  var u1 = rng(), u2 = rng();
+  while (u1 === 0) u1 = rng();
+  return Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
+}
+
+
+/* ===== 3. ALPHA SPENDING FUNCTIONS ===== */
+
+function alphaSpendOBF(t, alpha) {
+  if (t <= 0) return 0;
+  if (t >= 1) return alpha;
+  var za2 = normalQuantile(1 - alpha / 2);
+  return 2 - 2 * normalCDF(za2 / Math.sqrt(t));
+}
+
+function alphaSpendPocock(t, alpha) {
+  if (t <= 0) return 0;
+  if (t >= 1) return alpha;
+  return alpha * Math.log(1 + (Math.E - 1) * t);
+}
+
+function alphaSpendLanDeMets(t, alpha, rho) {
+  if (t <= 0) return 0;
+  if (t >= 1) return alpha;
+  return alpha * Math.pow(t, rho);
+}
+
+function alphaSpendHSD(t, alpha, gamma) {
+  if (t <= 0) return 0;
+  if (t >= 1) return alpha;
+  if (Math.abs(gamma) < 1e-8) {
+    return alpha * t;
+  }
+  return alpha * (1 - Math.exp(-gamma * t)) / (1 - Math.exp(-gamma));
+}
+
+function getSpendingFunction(type, param) {
+  switch (type) {
+    case 'obf': return function(t, a) { return alphaSpendOBF(t, a); };
+    case 'pocock': return function(t, a) { return alphaSpendPocock(t, a); };
+    case 'landemets': return function(t, a) { return alphaSpendLanDeMets(t, a, param); };
+    case 'hsd': return function(t, a) { return alphaSpendHSD(t, a, param); };
+    default: return function(t, a) { return alphaSpendOBF(t, a); };
+  }
+}
+
+function getSpendingName(type, param) {
+  switch (type) {
+    case 'obf': return "O'Brien-Fleming";
+    case 'pocock': return 'Pocock';
+    case 'landemets': return 'Lan-DeMets (rho=' + fmt(param, 1) + ')';
+    case 'hsd': return 'HSD (gamma=' + fmt(param, 1) + ')';
+    default: return type;
+  }
+}
+
+
+/* ===== 4. BOUNDARY COMPUTATION ===== */
+
+/* Gauss-Legendre quadrature nodes and weights (32-point) */
+var GL32_NODES = [], GL32_WEIGHTS = [];
+(function() {
+  /* Pre-computed 32-point Gauss-Legendre on [-1,1] */
+  var n = [
+    0.0483076656877383,0.1444719615827965,0.2392873622521371,0.3318686022821276,
+    0.4213512761306353,0.5068999089322294,0.5877157572407623,0.6630442669302152,
+    0.7321821187402897,0.7944837959679424,0.8493676137325700,0.8963211557660521,
+    0.9349060759377397,0.9647622555875064,0.9856115115452684,0.9972638618494816
+  ];
+  var w = [
+    0.0965400885147278,0.0956387200792749,0.0938443990808046,0.0911738786957639,
+    0.0876520930044038,0.0833119242269467,0.0781938957870703,0.0723457941088485,
+    0.0658222227763618,0.0586840934785355,0.0509980592623762,0.0428358980222267,
+    0.0342738629130214,0.0253920653092621,0.0162743947309057,0.0070186100094701
+  ];
+  for (var i = n.length - 1; i >= 0; i--) {
+    GL32_NODES.push(-n[i]);
+    GL32_WEIGHTS.push(w[i]);
+  }
+  for (var i = 0; i < n.length; i++) {
+    GL32_NODES.push(n[i]);
+    GL32_WEIGHTS.push(w[i]);
+  }
+})();
+
+/**
+ * Numerical integration using 32-point Gauss-Legendre quadrature.
+ * Integrates fn(x) from a to b.
+ */
+function gaussLegendre(fn, a, b) {
+  var mid = (a + b) / 2;
+  var half = (b - a) / 2;
+  var sum = 0;
+  for (var i = 0; i < 32; i++) {
+    sum += GL32_WEIGHTS[i] * fn(mid + half * GL32_NODES[i]);
+  }
+  return sum * half;
+}
+
+/**
+ * Compute group-sequential boundaries using recursive numerical integration.
+ *
+ * The canonical joint distribution: Z_k = sum of independent increments.
+ * Under H0, increments W_k ~ N(0, t_k - t_{k-1}).
+ * Z_k = (sum_{j=1}^{k} W_j) / sqrt(t_k)
+ * Cov(Z_i, Z_j) = sqrt(t_i/t_j) for i <= j (independent increments structure).
+ *
+ * The algorithm proceeds recursively: at look k we need
+ *   P(Z_k > c_k, Z_1 < c_1, ..., Z_{k-1} < c_{k-1}) = delta_alpha_k
+ *
+ * Using conditional distributions:
+ *   Z_k | Z_{k-1}=z ~ N(z * sqrt(t_{k-1}/t_k), 1 - t_{k-1}/t_k)
+ *
+ * We carry forward the density of Z_{k-1} on the continuation region and integrate.
+ */
+function computeBoundaries(alpha, infoFracs, spendFn, twoSided, futType, futSpendFn, beta) {
+  var K = infoFracs.length;
+  var boundaries = [];
+  var alphaSpentPrev = 0;
+  var betaSpentPrev = 0;
+  var hasFutility = futType !== 'none';
+  var effectiveBeta = beta != null ? beta : 0.2;
+
+  /* At each look we store {z_eff, z_fut, nomP_eff, nomP_fut, cumAlpha, cumBeta} */
+
+  /* The density array: we carry forward the joint density evaluated on a grid */
+  /* prevDensity[i] = density at grid point z_i in continuation region at look k-1 */
+
+  for (var k = 0; k < K; k++) {
+    var t = infoFracs[k];
+    var targetAlpha = spendFn(t, alpha);
+    var deltaAlpha = targetAlpha - alphaSpentPrev;
+    if (deltaAlpha < 1e-15) deltaAlpha = 1e-15;
+
+    var targetBeta = 0, deltaBeta = 0;
+    if (hasFutility && k < K - 1) {
+      targetBeta = futSpendFn(t, effectiveBeta);
+      deltaBeta = targetBeta - betaSpentPrev;
+      if (deltaBeta < 1e-15) deltaBeta = 1e-15;
+    }
+
+    var zEff, zFut;
+
+    if (k === 0) {
+      /* First look: simple quantile */
+      if (twoSided) {
+        zEff = normalQuantile(1 - deltaAlpha / 2);
+      } else {
+        zEff = normalQuantile(1 - deltaAlpha);
+      }
+
+      /* Futility at first look */
+      if (hasFutility && k < K - 1) {
+        /* For non-binding futility, find z_fut such that under H0,
+           P(Z_1 < z_fut) = deltaBeta (using beta spending on the lower tail) */
+        /* Under H1: P(Z < z_fut | theta) should be deltaBeta
+           But for simplicity and standard practice we define futility z under H0 */
+        /* Standard approach: use the beta spending to define futility */
+        zFut = normalQuantile(deltaBeta);
+      } else {
+        zFut = -Infinity;
+      }
+    } else {
+      var tPrev = infoFracs[k - 1];
+      var rho = Math.sqrt(tPrev / t);
+      var sigma = Math.sqrt(1 - tPrev / t);
+
+      /* Build the continuation region density from previous look */
+      var prevBounds = boundaries[k - 1];
+      /* For two-sided tests, the lower boundary of the continuation region
+         is -z_eff (symmetric rejection), unless an explicit futility boundary
+         is set that is higher than -z_eff */
+      var prevLo;
+      if (twoSided) {
+        prevLo = -prevBounds.z_eff;
+        if (prevBounds.z_fut > -10 && prevBounds.z_fut > prevLo) {
+          prevLo = prevBounds.z_fut;
+        }
+      } else {
+        prevLo = prevBounds.z_fut > -10 ? prevBounds.z_fut : -8;
+      }
+      var prevHi = prevBounds.z_eff;
+
+      /* For k >= 2, we need the joint probability by integrating over the continuation region.
+         We use a recursive approach: carry the density of the test statistic
+         in the continuation region forward.
+
+         At look k, the crossing probability:
+         P(Z_k > c_k, survived) = integral over z in [lo, hi] of
+           g(z) * (1 - Phi((c_k - rho*z) / sigma)) dz
+
+         where g(z) is the density of Z_{k-1} in the continuation region,
+         accounting for all previous boundaries.
+
+         For look 2 (k=1), g(z) = phi(z) (standard normal) restricted to continuation region.
+         For look k > 2, g(z) is the recursively computed density from look k-1.
+      */
+
+      /* We need to compute the recursive density. For simplicity and accuracy,
+         we carry the density as a function that recursively integrates. */
+
+      /* Actually, for a practical implementation with up to 5 looks,
+         we can use nested quadrature. For look k, we need (k-1)-dimensional
+         integration. With K<=5, this is at most 4-dimensional, which is
+         feasible with moderate quadrature points (fewer for inner dimensions). */
+
+      /* However, the standard efficient approach is the recursive density method:
+         At look j, define:
+           f_1(z) = phi(z) for z in [z_fut_1, z_eff_1]
+           f_j(z) = integral over z' in [z_fut_{j-1}, z_eff_{j-1}] of
+                     f_{j-1}(z') * phi_conditional(z | z') dz'
+         where phi_conditional(z | z') = N(rho_j * z', sigma_j^2)
+
+         Then P(cross at look k) = integral of f_{k-1}(z) * P(Z_k > c_k | z) dz
+      */
+
+      /* Build recursive density function */
+      var densityFn = buildRecursiveDensity(k, boundaries, infoFracs, twoSided);
+
+      /* Bisection to find z_eff */
+      var zLo = 0, zHi = 8;
+
+      /* Binary search for the z_eff such that crossing prob = deltaAlpha */
+      for (var iter = 0; iter < 80; iter++) {
+        var zMid = (zLo + zHi) / 2;
+        var prob = computeCrossingProb(zMid, densityFn, prevLo, prevHi, rho, sigma, twoSided);
+        if (prob > deltaAlpha) {
+          zLo = zMid;
+        } else {
+          zHi = zMid;
+        }
+      }
+      zEff = (zLo + zHi) / 2;
+
+      /* Futility boundary for this look */
+      if (hasFutility && k < K - 1) {
+        /* Find z_fut such that under H0, P(Z_k < z_fut, survived) = deltaBeta */
+        /* This uses the same recursive density but integrating the lower tail */
+        var fLo = -8, fHi = zEff - 0.01;
+        for (var iter = 0; iter < 80; iter++) {
+          var fMid = (fLo + fHi) / 2;
+          var fProb = computeFutilityCrossingProb(fMid, densityFn, prevLo, prevHi, rho, sigma);
+          if (fProb < deltaBeta) {
+            fLo = fMid;
+          } else {
+            fHi = fMid;
+          }
+        }
+        zFut = (fLo + fHi) / 2;
+      } else if (k === K - 1 && hasFutility) {
+        /* At final look, futility = efficacy (reject or fail to reject) */
+        zFut = zEff;
+      } else {
+        zFut = -Infinity;
+      }
+    }
+
+    var nomPEff = twoSided ? 2 * (1 - normalCDF(zEff)) : 1 - normalCDF(zEff);
+
+    boundaries.push({
+      look: k + 1,
+      infoFrac: t,
+      z_eff: zEff,
+      z_fut: zFut,
+      nomP_eff: nomPEff,
+      nomP_fut: zFut > -10 ? normalCDF(zFut) : 0,
+      cumAlpha: targetAlpha,
+      cumBeta: targetBeta
+    });
+
+    alphaSpentPrev = targetAlpha;
+    if (hasFutility) betaSpentPrev = targetBeta;
+  }
+
+  return boundaries;
+}
+
+/**
+ * Build recursive density function for look k.
+ * Returns a function f(z) representing the density of Z_{k-1} in the continuation region.
+ */
+function buildRecursiveDensity(k, boundaries, infoFracs, twoSided) {
+  if (k === 1) {
+    /* Density at look 1 is just the standard normal, restricted to continuation region */
+    return function(z) {
+      return normalPDF(z);
+    };
+  }
+
+  /* For k > 1, we recursively integrate */
+  var prevDensity = buildRecursiveDensity(k - 1, boundaries, infoFracs, twoSided);
+  var prevBounds = boundaries[k - 2]; /* k-2 because boundaries is 0-indexed */
+  var prevLo;
+  if (twoSided) {
+    prevLo = -prevBounds.z_eff;
+    if (prevBounds.z_fut > -10 && prevBounds.z_fut > prevLo) {
+      prevLo = prevBounds.z_fut;
+    }
+  } else {
+    prevLo = prevBounds.z_fut > -10 ? prevBounds.z_fut : -8;
+  }
+  var prevHi = prevBounds.z_eff;
+
+  var tCurr = infoFracs[k - 1]; /* info fraction at look k (0-indexed) */
+  var tPrev = infoFracs[k - 2]; /* info fraction at look k-1 */
+  var rho = Math.sqrt(tPrev / tCurr);
+  var sigma = Math.sqrt(1 - tPrev / tCurr);
+
+  return function(z) {
+    /* f_k(z) = integral over z' in continuation region of
+       f_{k-1}(z') * phi((z - rho*z') / sigma) / sigma dz' */
+    return gaussLegendre(function(zp) {
+      return prevDensity(zp) * normalPDF((z - rho * zp) / sigma) / sigma;
+    }, prevLo, prevHi);
+  };
+}
+
+/**
+ * Compute P(Z_k > c | survived all previous looks) under H0.
+ */
+function computeCrossingProb(c, densityFn, prevLo, prevHi, rho, sigma, twoSided) {
+  /* P = integral over z in [prevLo, prevHi] of
+         densityFn(z) * P(Z_k > c | Z_{k-1} = z) dz
+       = integral of densityFn(z) * (1 - Phi((c - rho*z)/sigma)) dz */
+  var prob = gaussLegendre(function(z) {
+    return densityFn(z) * (1 - normalCDF((c - rho * z) / sigma));
+  }, prevLo, prevHi);
+
+  if (twoSided) {
+    /* Also count lower tail: P(Z_k < -c | survived) */
+    prob += gaussLegendre(function(z) {
+      return densityFn(z) * normalCDF((-c - rho * z) / sigma);
+    }, prevLo, prevHi);
+  }
+  return prob;
+}
+
+/**
+ * Compute P(Z_k < c | survived) under H0 for futility.
+ */
+function computeFutilityCrossingProb(c, densityFn, prevLo, prevHi, rho, sigma) {
+  return gaussLegendre(function(z) {
+    return densityFn(z) * normalCDF((c - rho * z) / sigma);
+  }, prevLo, prevHi);
+}
+
+
+/* ===== 5. SVG CHART RENDERING ===== */
+
+var SVG_NS = 'http://www.w3.org/2000/svg';
+
+function clearSvg(svg) {
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+}
+
+function svgEl(tag, attrs) {
+  var el = document.createElementNS(SVG_NS, tag);
+  if (attrs) {
+    for (var k in attrs) {
+      if (attrs.hasOwnProperty(k)) el.setAttribute(k, attrs[k]);
+    }
+  }
+  return el;
+}
+
+function svgText(x, y, text, attrs) {
+  var el = svgEl('text', Object.assign({x: x, y: y}, attrs || {}));
+  el.textContent = text;
+  return el;
+}
+
+/**
+ * Draw the boundary plot on the given SVG element.
+ */
+function drawBoundaryChart(svgId, boundaries, scale, overlayBoundaries) {
+  var svg = document.getElementById(svgId);
+  clearSvg(svg);
+
+  var W = 700, H = 420;
+  var margin = {top: 40, right: 30, bottom: 55, left: 65};
+  var pw = W - margin.left - margin.right;
+  var ph = H - margin.top - margin.bottom;
+
+  /* Determine scale transform */
+  var getY, yLabel;
+  if (scale === 'p') {
+    getY = function(z) { return 1 - normalCDF(z); };
+    yLabel = 'Nominal p-value';
+  } else if (scale === 'effect') {
+    /* Convert Z to effect size based on endpoint type */
+    var endpoint = document.getElementById('endpointType').value;
+    var maxEvt = parseFloat(document.getElementById('maxEvents').value) || 800;
+    getY = function(z, infoFrac) {
+      var d = maxEvt * (infoFrac != null ? infoFrac : 1);
+      if (endpoint === 'tte') {
+        return Math.exp(-z / Math.sqrt(d / 4));
+      } else {
+        return -z / Math.sqrt(d / 4);
+      }
+    };
+    yLabel = endpoint === 'tte' ? 'Hazard Ratio' : 'Effect Size';
+  } else {
+    getY = function(z) { return z; };
+    yLabel = 'Z-value';
+  }
+
+  /* Data extraction */
+  var xs = boundaries.map(function(b) { return b.infoFrac; });
+  var effYs = boundaries.map(function(b) { return getY(b.z_eff, b.infoFrac); });
+  var futYs = boundaries.map(function(b) {
+    return b.z_fut > -10 ? getY(b.z_fut, b.infoFrac) : null;
+  });
+
+  /* Y range */
+  var allYs = effYs.slice();
+  futYs.forEach(function(y) { if (y != null) allYs.push(y); });
+  if (overlayBoundaries) {
+    overlayBoundaries.forEach(function(b) {
+      allYs.push(getY(b.z_eff, b.infoFrac));
+      if (b.z_fut > -10) allYs.push(getY(b.z_fut, b.infoFrac));
+    });
+  }
+  var yMin = Math.min.apply(null, allYs);
+  var yMax = Math.max.apply(null, allYs);
+  var yPad = (yMax - yMin) * 0.15 || 0.5;
+  yMin -= yPad; yMax += yPad;
+
+  /* Scale functions */
+  function sx(v) { return margin.left + (v - 0) / (1 - 0) * pw; }
+  function sy(v) { return margin.top + (yMax - v) / (yMax - yMin) * ph; }
+
+  /* Background */
+  svg.appendChild(svgEl('rect', {x:0, y:0, width:W, height:H, fill:'var(--bg-card)'}));
+
+  /* Grid */
+  var g = svgEl('g', {});
+  for (var i = 0; i <= 5; i++) {
+    var xv = i / 5;
+    g.appendChild(svgEl('line', {x1:sx(xv), y1:margin.top, x2:sx(xv), y2:margin.top+ph, stroke:'var(--border)', 'stroke-width':0.5}));
+    g.appendChild(svgText(sx(xv), H - margin.bottom + 20, fmt(xv, 1), {'text-anchor':'middle', 'font-size':'11', fill:'var(--text-secondary)'}));
+  }
+  var yTicks = 6;
+  for (var i = 0; i <= yTicks; i++) {
+    var yv = yMin + (yMax - yMin) * i / yTicks;
+    g.appendChild(svgEl('line', {x1:margin.left, y1:sy(yv), x2:margin.left+pw, y2:sy(yv), stroke:'var(--border)', 'stroke-width':0.5}));
+    g.appendChild(svgText(margin.left - 8, sy(yv) + 4, fmt(yv, scale === 'p' ? 4 : 2), {'text-anchor':'end', 'font-size':'11', fill:'var(--text-secondary)'}));
+  }
+  svg.appendChild(g);
+
+  /* Axis labels */
+  svg.appendChild(svgText(margin.left + pw/2, H - 8, 'Information Fraction', {'text-anchor':'middle', 'font-size':'12', fill:'var(--text-primary)', 'font-weight':'500'}));
+  var yLab = svgText(0, 0, yLabel, {'text-anchor':'middle', 'font-size':'12', fill:'var(--text-primary)', 'font-weight':'500', transform:'translate(15,' + (margin.top + ph/2) + ') rotate(-90)'});
+  svg.appendChild(yLab);
+
+  /* Shaded regions */
+  if (scale === 'z' || scale === 'effect') {
+    /* Rejection region (above efficacy line) */
+    var pts = '';
+    for (var i = 0; i < xs.length; i++) {
+      pts += sx(xs[i]) + ',' + sy(effYs[i]) + ' ';
+    }
+    pts += sx(xs[xs.length-1]) + ',' + margin.top + ' ' + sx(xs[0]) + ',' + margin.top;
+    svg.appendChild(svgEl('polygon', {points: pts, fill: 'var(--reject-region)', stroke: 'none'}));
+
+    /* Futility region (below futility line) */
+    var hasFut = futYs.some(function(y) { return y != null; });
+    if (hasFut) {
+      var fpts = '';
+      for (var i = 0; i < xs.length; i++) {
+        if (futYs[i] != null) fpts += sx(xs[i]) + ',' + sy(futYs[i]) + ' ';
+      }
+      /* Close the polygon at the bottom */
+      for (var i = xs.length - 1; i >= 0; i--) {
+        if (futYs[i] != null) fpts += sx(xs[i]) + ',' + (margin.top + ph) + ' ';
+      }
+      if (fpts) svg.appendChild(svgEl('polygon', {points: fpts, fill: 'var(--futility-region)', stroke: 'none'}));
+    }
+  }
+
+  /* Draw efficacy boundary line + points */
+  drawBoundaryLine(svg, xs, effYs, sx, sy, 'var(--efficacy-color)', 'Efficacy');
+  /* Draw futility boundary line + points */
+  var filteredFutXs = [], filteredFutYs = [];
+  for (var i = 0; i < xs.length; i++) {
+    if (futYs[i] != null) {
+      filteredFutXs.push(xs[i]);
+      filteredFutYs.push(futYs[i]);
+    }
+  }
+  if (filteredFutXs.length > 0) {
+    drawBoundaryLine(svg, filteredFutXs, filteredFutYs, sx, sy, 'var(--futility-color)', 'Futility');
+  }
+
+  /* Overlay */
+  if (overlayBoundaries && overlayBoundaries.length > 0) {
+    var oXs = overlayBoundaries.map(function(b) { return b.infoFrac; });
+    var oEffYs = overlayBoundaries.map(function(b) { return getY(b.z_eff, b.infoFrac); });
+    drawBoundaryLine(svg, oXs, oEffYs, sx, sy, '#9b59b6', 'Overlay Eff.', true);
+    var oFutYs = overlayBoundaries.map(function(b) { return b.z_fut > -10 ? getY(b.z_fut, b.infoFrac) : null; });
+    var oFiltX = [], oFiltY = [];
+    for (var i = 0; i < oXs.length; i++) {
+      if (oFutYs[i] != null) { oFiltX.push(oXs[i]); oFiltY.push(oFutYs[i]); }
+    }
+    if (oFiltX.length > 0) {
+      drawBoundaryLine(svg, oFiltX, oFiltY, sx, sy, '#1abc9c', 'Overlay Fut.', true);
+    }
+  }
+
+  /* Legend */
+  var lx = margin.left + 10, ly = margin.top + 15;
+  svg.appendChild(svgEl('rect', {x:lx, y:ly-10, width:12, height:3, fill:'var(--efficacy-color)'}));
+  svg.appendChild(svgText(lx+16, ly-5, 'Efficacy', {'font-size':'10', fill:'var(--text-primary)'}));
+  if (filteredFutXs.length > 0) {
+    svg.appendChild(svgEl('rect', {x:lx, y:ly+5, width:12, height:3, fill:'var(--futility-color)'}));
+    svg.appendChild(svgText(lx+16, ly+10, 'Futility', {'font-size':'10', fill:'var(--text-primary)'}));
+  }
+  if (overlayBoundaries && overlayBoundaries.length > 0) {
+    svg.appendChild(svgEl('rect', {x:lx+100, y:ly-10, width:12, height:3, fill:'#9b59b6', 'stroke-dasharray':'4,2'}));
+    svg.appendChild(svgText(lx+116, ly-5, 'Overlay Eff.', {'font-size':'10', fill:'var(--text-primary)'}));
+  }
+
+  /* Title */
+  svg.appendChild(svgText(W/2, 20, 'Group-Sequential Boundaries', {'text-anchor':'middle', 'font-size':'14', 'font-weight':'600', fill:'var(--text-primary)'}));
+}
+
+function drawBoundaryLine(svg, xs, ys, sx, sy, color, label, dashed) {
+  if (xs.length === 0) return;
+  /* Line */
+  var d = 'M ' + sx(xs[0]) + ' ' + sy(ys[0]);
+  for (var i = 1; i < xs.length; i++) {
+    d += ' L ' + sx(xs[i]) + ' ' + sy(ys[i]);
+  }
+  var attrs = {d: d, stroke: color, 'stroke-width': 2, fill: 'none'};
+  if (dashed) attrs['stroke-dasharray'] = '6,3';
+  svg.appendChild(svgEl('path', attrs));
+
+  /* Points */
+  for (var i = 0; i < xs.length; i++) {
+    svg.appendChild(svgEl('circle', {cx: sx(xs[i]), cy: sy(ys[i]), r: 4, fill: color, stroke: 'var(--bg-card)', 'stroke-width': 2}));
+  }
+}
+
+/**
+ * Draw a line chart (for power curve, ASN curve).
+ */
+function drawLineChart(svgId, datasets, xLabel, yLabel, title, width, height) {
+  var svg = document.getElementById(svgId);
+  clearSvg(svg);
+
+  var W = width || 700, H = height || 380;
+  var margin = {top: 40, right: 30, bottom: 55, left: 70};
+  var pw = W - margin.left - margin.right;
+  var ph = H - margin.top - margin.bottom;
+
+  /* Find ranges */
+  var xMin = Infinity, xMax = -Infinity, yMin = Infinity, yMax = -Infinity;
+  datasets.forEach(function(ds) {
+    ds.data.forEach(function(pt) {
+      if (pt.x < xMin) xMin = pt.x;
+      if (pt.x > xMax) xMax = pt.x;
+      if (pt.y < yMin) yMin = pt.y;
+      if (pt.y > yMax) yMax = pt.y;
+    });
+  });
+  var xPad = (xMax - xMin) * 0.05 || 0.1;
+  var yPad = (yMax - yMin) * 0.1 || 0.1;
+  xMin -= xPad; xMax += xPad;
+  yMin = Math.max(0, yMin - yPad); yMax += yPad;
+
+  function sx(v) { return margin.left + (v - xMin) / (xMax - xMin) * pw; }
+  function sy(v) { return margin.top + (yMax - v) / (yMax - yMin) * ph; }
+
+  svg.appendChild(svgEl('rect', {x:0, y:0, width:W, height:H, fill:'var(--bg-card)'}));
+
+  /* Grid */
+  var nxt = 6;
+  for (var i = 0; i <= nxt; i++) {
+    var xv = xMin + (xMax - xMin) * i / nxt;
+    svg.appendChild(svgEl('line', {x1:sx(xv), y1:margin.top, x2:sx(xv), y2:margin.top+ph, stroke:'var(--border)', 'stroke-width':0.5}));
+    svg.appendChild(svgText(sx(xv), H - margin.bottom + 20, fmt(xv, 2), {'text-anchor':'middle', 'font-size':'10', fill:'var(--text-secondary)'}));
+  }
+  var nyt = 6;
+  for (var i = 0; i <= nyt; i++) {
+    var yv = yMin + (yMax - yMin) * i / nyt;
+    svg.appendChild(svgEl('line', {x1:margin.left, y1:sy(yv), x2:margin.left+pw, y2:sy(yv), stroke:'var(--border)', 'stroke-width':0.5}));
+    svg.appendChild(svgText(margin.left - 8, sy(yv) + 4, fmt(yv, 2), {'text-anchor':'end', 'font-size':'10', fill:'var(--text-secondary)'}));
+  }
+
+  /* Lines and points */
+  var colors = ['var(--accent)', 'var(--efficacy-color)', 'var(--success)', '#9b59b6', '#f39c12', '#1abc9c'];
+  datasets.forEach(function(ds, idx) {
+    var c = ds.color || colors[idx % colors.length];
+    if (ds.data.length > 1) {
+      var d = 'M ' + sx(ds.data[0].x) + ' ' + sy(ds.data[0].y);
+      for (var i = 1; i < ds.data.length; i++) {
+        d += ' L ' + sx(ds.data[i].x) + ' ' + sy(ds.data[i].y);
+      }
+      var lineAttrs = {d: d, stroke: c, 'stroke-width': 2, fill: 'none'};
+      if (ds.dashed) lineAttrs['stroke-dasharray'] = '6,3';
+      svg.appendChild(svgEl('path', lineAttrs));
+    }
+    ds.data.forEach(function(pt) {
+      svg.appendChild(svgEl('circle', {cx: sx(pt.x), cy: sy(pt.y), r: 3.5, fill: c, stroke: 'var(--bg-card)', 'stroke-width': 1.5}));
+    });
+  });
+
+  /* Axis labels */
+  svg.appendChild(svgText(margin.left + pw/2, H - 8, xLabel, {'text-anchor':'middle', 'font-size':'12', fill:'var(--text-primary)', 'font-weight':'500'}));
+  svg.appendChild(svgText(0, 0, yLabel, {'text-anchor':'middle', 'font-size':'12', fill:'var(--text-primary)', 'font-weight':'500', transform:'translate(15,' + (margin.top + ph/2) + ') rotate(-90)'}));
+  svg.appendChild(svgText(W/2, 20, title, {'text-anchor':'middle', 'font-size':'14', 'font-weight':'600', fill:'var(--text-primary)'}));
+
+  /* Legend */
+  if (datasets.length > 1) {
+    var lx = margin.left + pw - 120, ly = margin.top + 15;
+    datasets.forEach(function(ds, idx) {
+      var c = ds.color || colors[idx % colors.length];
+      svg.appendChild(svgEl('rect', {x:lx, y:ly + idx*18 - 8, width:12, height:3, fill:c}));
+      svg.appendChild(svgText(lx+16, ly + idx*18 - 3, ds.label || ('Series ' + (idx+1)), {'font-size':'10', fill:'var(--text-primary)'}));
+    });
+  }
+}
+
+/**
+ * Draw stacked horizontal bar chart for stopping probabilities.
+ */
+function drawStoppingBars(svgId, data, scenarios, K) {
+  /* data: array of {scenario, looks: [{look, probEff, probFut}]} */
+  var svg = document.getElementById(svgId);
+  clearSvg(svg);
+
+  var W = 700, H = 350;
+  var margin = {top: 40, right: 30, bottom: 50, left: 120};
+  var pw = W - margin.left - margin.right;
+  var ph = H - margin.top - margin.bottom;
+
+  svg.appendChild(svgEl('rect', {x:0, y:0, width:W, height:H, fill:'var(--bg-card)'}));
+
+  var nBars = data.length;
+  var barH = Math.min(30, ph / nBars - 4);
+  var gap = (ph - nBars * barH) / (nBars + 1);
+
+  var lookColors = ['#e74c3c', '#f39c12', '#3498db', '#2ecc71', '#9b59b6'];
+  var futColors = ['#bdc3c7', '#95a5a6', '#7f8c8d', '#6c7a7d', '#5d6d70'];
+
+  function sx(v) { return margin.left + v * pw; }
+
+  /* Grid */
+  for (var i = 0; i <= 5; i++) {
+    var xv = i / 5;
+    svg.appendChild(svgEl('line', {x1:sx(xv), y1:margin.top, x2:sx(xv), y2:margin.top+ph, stroke:'var(--border)', 'stroke-width':0.5}));
+    svg.appendChild(svgText(sx(xv), H - margin.bottom + 20, (xv*100).toFixed(0) + '%', {'text-anchor':'middle', 'font-size':'10', fill:'var(--text-secondary)'}));
+  }
+
+  data.forEach(function(row, idx) {
+    var y = margin.top + gap + idx * (barH + gap);
+    var x = 0;
+
+    /* Label */
+    svg.appendChild(svgText(margin.left - 8, y + barH/2 + 4, escapeHtml(row.label), {'text-anchor':'end', 'font-size':'11', fill:'var(--text-primary)'}));
+
+    /* Stacked segments: efficacy at each look, then futility */
+    row.looks.forEach(function(lk, li) {
+      if (lk.probEff > 0.001) {
+        svg.appendChild(svgEl('rect', {x: sx(x), y: y, width: Math.max(1, lk.probEff * pw), height: barH, fill: lookColors[li % lookColors.length], rx: 2}));
+        if (lk.probEff > 0.04) {
+          svg.appendChild(svgText(sx(x) + lk.probEff * pw / 2, y + barH/2 + 4, (lk.probEff * 100).toFixed(1) + '%', {'text-anchor':'middle', 'font-size':'9', fill:'#fff', 'font-weight':'600'}));
+        }
+        x += lk.probEff;
+      }
+    });
+    row.looks.forEach(function(lk, li) {
+      if (lk.probFut > 0.001) {
+        svg.appendChild(svgEl('rect', {x: sx(x), y: y, width: Math.max(1, lk.probFut * pw), height: barH, fill: futColors[li % futColors.length], rx: 2}));
+        x += lk.probFut;
+      }
+    });
+  });
+
+  /* Title */
+  svg.appendChild(svgText(W/2, 20, 'Stopping Probabilities by Look', {'text-anchor':'middle', 'font-size':'14', 'font-weight':'600', fill:'var(--text-primary)'}));
+
+  /* Legend */
+  var lx = margin.left, ly = H - 15;
+  for (var i = 0; i < K; i++) {
+    svg.appendChild(svgEl('rect', {x:lx + i*90, y:ly-8, width:10, height:10, fill:lookColors[i % lookColors.length], rx:2}));
+    svg.appendChild(svgText(lx + i*90 + 14, ly, 'Eff. Look ' + (i+1), {'font-size':'9', fill:'var(--text-primary)'}));
+  }
+}
+
+
+/* ===== 6. MONTE CARLO SIMULATION (Web Worker) ===== */
+
+var currentWorker = null;
+var currentSSRWorker = null;
+
+function buildWorkerCode() {
+  /* Returns a string of JS code for the inline Web Worker.
+     Uses xoshiro128** PRNG and runs the GS simulation. */
+  var code = [
+    '/* AdaptSim Simulation Worker */',
+    '(function() {',
+    '',
+    '/* Seeded PRNG: xoshiro128** */',
+    'function xoshiro128ss(a, b, c, d) {',
+    '  return function() {',
+    '    var t = b << 9, r = b * 5;',
+    '    r = (r << 7 | r >>> 25) * 9;',
+    '    c ^= a; d ^= b; b ^= c; a ^= d;',
+    '    c ^= t;',
+    '    d = d << 11 | d >>> 21;',
+    '    return (r >>> 0) / 4294967296;',
+    '  };',
+    '}',
+    'function sm32(a) {',
+    '  return function() {',
+    '    a |= 0; a = a + 0x9e3779b9 | 0;',
+    '    var t = a ^ a >>> 16; t = Math.imul(t, 0x21f0aaad);',
+    '    t = t ^ t >>> 15; t = Math.imul(t, 0x735a2d97);',
+    '    return ((t = t ^ t >>> 15) >>> 0);',
+    '  };',
+    '}',
+    'function seedPRNG(seed) {',
+    '  var sm = sm32(seed);',
+    '  return xoshiro128ss(sm(), sm(), sm(), sm());',
+    '}',
+    '',
+    '/* Box-Muller */',
+    'function normalRandom(rng) {',
+    '  var u1 = rng(), u2 = rng();',
+    '  while (u1 === 0) u1 = rng();',
+    '  return Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);',
+    '}',
+    '',
+    '/* Normal CDF (A&S 26.2.17) */',
+    'function normalCDF(x) {',
+    '  if (x < -8) return 0;',
+    '  if (x > 8) return 1;',
+    '  var neg = x < 0;',
+    '  if (neg) x = -x;',
+    '  var p = 0.2316419;',
+    '  var b1 = 0.319381530, b2 = -0.356563782, b3 = 1.781477937, b4 = -1.821255978, b5 = 1.330274429;',
+    '  var t = 1.0 / (1.0 + p * x);',
+    '  var t2 = t*t, t3 = t2*t, t4 = t3*t, t5 = t4*t;',
+    '  var pdf = Math.exp(-0.5 * x * x) / Math.sqrt(2 * Math.PI);',
+    '  var cdf = 1.0 - pdf * (b1*t + b2*t2 + b3*t3 + b4*t4 + b5*t5);',
+    '  return neg ? 1 - cdf : cdf;',
+    '}',
+    '',
+    'self.onmessage = function(e) {',
+    '  var cfg = e.data;',
+    '  var nSim = cfg.nSim;',
+    '  var K = cfg.K;',
+    '  var infoFracs = cfg.infoFracs;',
+    '  var zEff = cfg.zEff;',
+    '  var zFut = cfg.zFut;',
+    '  var scenarios = cfg.scenarios;',
+    '  var twoSided = cfg.twoSided;',
+    '  var seed = cfg.seed;',
+    '  var maxN = cfg.maxN;',
+    '  var isSSR = cfg.isSSR || false;',
+    '  var ssrLook = cfg.ssrLook || 0;',
+    '  var ssrCPLow = cfg.ssrCPLow || 0.36;',
+    '  var ssrCPHigh = cfg.ssrCPHigh || 0.80;',
+    '  var ssrMaxFold = cfg.ssrMaxFold || 2.0;',
+    '  var ssrTargetCP = cfg.ssrTargetCP || 0.80;',
+    '  var zAlpha = cfg.zAlpha || 1.96;',
+    '',
+    '  var results = [];',
+    '  var totalSims = nSim * scenarios.length;',
+    '  var done = 0;',
+    '',
+    '  for (var si = 0; si < scenarios.length; si++) {',
+    '    var theta = scenarios[si];',
+    '    var rng = seedPRNG(seed + si * 1000);',
+    '',
+    '    var rejects = 0;',
+    '    var futilityStops = 0;',
+    '    var totalN = 0;',
+    '    var stopCounts = new Array(K);',
+    '    var stopCountsFut = new Array(K);',
+    '    for (var j = 0; j < K; j++) { stopCounts[j] = 0; stopCountsFut[j] = 0; }',
+    '',
+    '    /* SSR tracking */',
+    '    var ssrTriggered = 0;',
+    '    var ssrFoldSum = 0;',
+    '    var ssrRejects = 0;',
+    '    var ssrTotalN = 0;',
+    '',
+    '    for (var sim = 0; sim < nSim; sim++) {',
+    '      /* Generate test statistics using independent increments */',
+    '      var Z = new Array(K);',
+    '      var stopped = false;',
+    '      var rejected = false;',
+    '      var stoppedAtLook = K - 1;',
+    '      var ssrFold = 1.0;',
+    '      var ssrActive = false;',
+    '',
+    '      for (var k = 0; k < K; k++) {',
+    '        var t_k = infoFracs[k];',
+    '        var t_prev = k > 0 ? infoFracs[k-1] : 0;',
+    '        var dt = t_k - t_prev;',
+    '',
+    '        /* Increment: W_k ~ N(theta*sqrt(dt), dt) */',
+    '        /* Z_k = (cumulative sum) / sqrt(t_k) */',
+    '        /* Using Z_k = Z_{k-1} * sqrt(t_{k-1}/t_k) + N(theta*dt, dt - t_{k-1}^2/t_k) / sqrt(t_k) */',
+    '        /* Simplified: Z_k = Z_{k-1} * sqrt(t_{k-1}/t_k) + (theta*dt + normalRandom*sqrt(dt)) / sqrt(t_k) */',
+    '        /* Actually, the drift under H1: E[Z_k] = theta * sqrt(t_k * maxN) under standard parameterization */',
+    '        /* For independent increments: W_k = Z_k*sqrt(t_k) - Z_{k-1}*sqrt(t_{k-1}) ~ N(theta*dt*sqrt(maxN), dt) */',
+    '',
+    '        if (k === 0) {',
+    '          Z[k] = theta * Math.sqrt(t_k) + normalRandom(rng) * Math.sqrt(t_k);',
+    '        } else {',
+    '          /* Conditional: Z_k | Z_{k-1} ~ N(Z_{k-1}*rho + theta*(t_k - t_{k-1})/sqrt(t_k), sigma^2) */',
+    '          /* where rho = sqrt(t_{k-1}/t_k), sigma^2 = 1 - t_{k-1}/t_k */',
+    '          var rho_k = Math.sqrt(t_prev / t_k);',
+    '          var sigma_k = Math.sqrt(1 - t_prev / t_k);',
+    '          var drift = theta * (t_k - t_prev) / Math.sqrt(t_k);',
+    '          Z[k] = Z[k-1] * rho_k + drift + normalRandom(rng) * sigma_k;',
+    '        }',
+    '',
+    '        /* SSR check */',
+    '        if (isSSR && k === ssrLook && !stopped) {',
+    '          var zm = Z[k];',
+    '          var tm = infoFracs[k];',
+    '          /* Conditional power under current trend */',
+    '          var thetaObs = zm / Math.sqrt(tm);',
+    '          var cp = 1 - normalCDF((zEff[K-1] - zm * Math.sqrt(tm)) / Math.sqrt(1 - tm));',
+    '          if (cp >= ssrCPLow && cp < ssrCPHigh) {',
+    '            /* In promising zone: increase sample size */',
+    '            ssrActive = true;',
+    '            ssrTriggered++;',
+    '            /* Target n to achieve target CP */',
+    '            /* n_new/n_old = (z_{1-beta} + z_{alpha})^2 / (z_m*sqrt(tm) + z_{beta}*sqrt(1-tm))^2 */',
+    '            /* Simplified: fold = target/current */',
+    '            var zBeta = 0.8416; /* approx normalQuantile(0.8) */',
+    '            var numerator = (zAlpha + zBeta);',
+    '            var denom = zm * Math.sqrt(tm) / Math.sqrt(1-tm) + zBeta;',
+    '            if (denom > 0.01) {',
+    '              ssrFold = Math.min(ssrMaxFold, Math.max(1.0, (numerator * numerator) / (denom * denom)));',
+    '            } else {',
+    '              ssrFold = ssrMaxFold;',
+    '            }',
+    '            ssrFoldSum += ssrFold;',
+    '          }',
+    '        }',
+    '',
+    '        if (!stopped) {',
+    '          /* Check efficacy */',
+    '          var effCheck = twoSided ? (Math.abs(Z[k]) > zEff[k]) : (Z[k] > zEff[k]);',
+    '          if (effCheck) {',
+    '            stopped = true;',
+    '            rejected = true;',
+    '            stoppedAtLook = k;',
+    '            stopCounts[k]++;',
+    '            break;',
+    '          }',
+    '          /* Check futility */',
+    '          if (zFut[k] > -99 && k < K - 1) {',
+    '            if (Z[k] < zFut[k]) {',
+    '              stopped = true;',
+    '              stoppedAtLook = k;',
+    '              stopCountsFut[k]++;',
+    '              break;',
+    '            }',
+    '          }',
+    '        }',
+    '      }',
+    '',
+    '      if (rejected) rejects++;',
+    '      var stoppedFrac = infoFracs[stoppedAtLook];',
+    '      var thisN = maxN * stoppedFrac;',
+    '      if (ssrActive) thisN *= ssrFold;',
+    '      totalN += thisN;',
+    '',
+    '      if (isSSR) {',
+    '        if (ssrActive) {',
+    '          ssrTotalN += maxN * stoppedFrac * ssrFold;',
+    '          if (rejected) ssrRejects++;',
+    '        } else {',
+    '          ssrTotalN += maxN * stoppedFrac;',
+    '          if (rejected) ssrRejects++;',
+    '        }',
+    '      }',
+    '',
+    '      done++;',
+    '      if (done % 2000 === 0) {',
+    '        self.postMessage({type: "progress", value: done / totalSims});',
+    '      }',
+    '    }',
+    '',
+    '    var res = {',
+    '      scenario: theta,',
+    '      power: rejects / nSim,',
+    '      asn: totalN / nSim,',
+    '      medianN: maxN * infoFracs[Math.floor(K/2)],',
+    '      stopProbs: [],',
+    '      earlyStop: 0',
+    '    };',
+    '    var earlyStopSum = 0;',
+    '    for (var k = 0; k < K; k++) {',
+    '      res.stopProbs.push({look: k+1, probEff: stopCounts[k]/nSim, probFut: stopCountsFut[k]/nSim});',
+    '      if (k < K-1) earlyStopSum += (stopCounts[k] + stopCountsFut[k]);',
+    '    }',
+    '    res.earlyStop = earlyStopSum / nSim;',
+    '',
+    '    if (isSSR) {',
+    '      res.ssrTriggered = ssrTriggered / nSim;',
+    '      res.ssrMeanFold = ssrTriggered > 0 ? ssrFoldSum / ssrTriggered : 1.0;',
+    '      res.ssrASN = ssrTotalN / nSim;',
+    '      res.ssrPower = ssrRejects / nSim;',
+    '    }',
+    '',
+    '    results.push(res);',
+    '  }',
+    '',
+    '  self.postMessage({type: "done", results: results});',
+    '};',
+    '',
+    '})();'
+  ].join('\n');
+  return code;
+}
+
+function runSimulation(config, onProgress, onDone) {
+  if (currentWorker) {
+    currentWorker.terminate();
+    currentWorker = null;
+  }
+  var code = buildWorkerCode();
+  var blob = new Blob([code], {type: 'application/javascript'});
+  var url = URL.createObjectURL(blob);
+  var worker = new Worker(url);
+  URL.revokeObjectURL(url);
+  currentWorker = worker;
+
+  worker.onmessage = function(e) {
+    if (e.data.type === 'progress') {
+      onProgress(e.data.value);
+    } else if (e.data.type === 'done') {
+      onDone(e.data.results);
+      worker.terminate();
+      currentWorker = null;
+    }
+  };
+  worker.onerror = function(err) {
+    console.error('Worker error:', err);
+    worker.terminate();
+    currentWorker = null;
+  };
+  worker.postMessage(config);
+}
+
+function runSSRSimulation(config, onProgress, onDone) {
+  if (currentSSRWorker) {
+    currentSSRWorker.terminate();
+    currentSSRWorker = null;
+  }
+  var code = buildWorkerCode();
+  var blob = new Blob([code], {type: 'application/javascript'});
+  var url = URL.createObjectURL(blob);
+  var worker = new Worker(url);
+  URL.revokeObjectURL(url);
+  currentSSRWorker = worker;
+
+  worker.onmessage = function(e) {
+    if (e.data.type === 'progress') {
+      onProgress(e.data.value);
+    } else if (e.data.type === 'done') {
+      onDone(e.data.results);
+      worker.terminate();
+      currentSSRWorker = null;
+    }
+  };
+  worker.onerror = function(err) {
+    console.error('SSR Worker error:', err);
+    worker.terminate();
+    currentSSRWorker = null;
+  };
+  worker.postMessage(config);
+}
+
+
+/* ===== 7. GLOBAL STATE ===== */
+
+var STATE = {
+  boundaries: null,
+  overlayBoundaries: null,
+  ocResults: null,
+  ssrResults: null,
+  currentScale: 'z',
+  config: {}
+};
+
+
+/* ===== 8. UI WIRING ===== */
+
+(function() {
+
+  /* Theme toggle */
+  var themeBtn = document.getElementById('themeToggle');
+  var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  var savedTheme = null;
+  try { savedTheme = localStorage.getItem('adaptsim-theme'); } catch(e) {}
+  if (savedTheme === 'dark' || (savedTheme == null && prefersDark)) {
+    document.body.classList.add('dark');
+    themeBtn.textContent = '\u2600'; /* Sun */
+  }
+  themeBtn.addEventListener('click', function() {
+    document.body.classList.toggle('dark');
+    var isDark = document.body.classList.contains('dark');
+    themeBtn.textContent = isDark ? '\u2600' : '\u263E';
+    try { localStorage.setItem('adaptsim-theme', isDark ? 'dark' : 'light'); } catch(e) {}
+    /* Redraw charts if boundaries exist */
+    if (STATE.boundaries) {
+      drawBoundaryChart('boundaryChart', STATE.boundaries, STATE.currentScale, STATE.overlayBoundaries);
+    }
+  });
+  themeBtn.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); themeBtn.click(); }
+  });
+
+  /* Tab switching */
+  var tabBtns = document.querySelectorAll('.tab-btn');
+  var tabPanels = document.querySelectorAll('.tab-panel');
+  tabBtns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var tab = btn.getAttribute('data-tab');
+      tabBtns.forEach(function(b) { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+      tabPanels.forEach(function(p) { p.classList.remove('active'); });
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+      document.getElementById('panel-' + tab).classList.add('active');
+    });
+    btn.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); btn.click(); }
+    });
+  });
+
+  /* Endpoint type change */
+  var endpointType = document.getElementById('endpointType');
+  var effectSizeLabel = document.getElementById('effectSizeLabel');
+  var maxEventsLabel = document.getElementById('maxEventsLabel');
+  var scenarioLabel = document.getElementById('scenarioLabel');
+  var controlRateGroup = document.getElementById('controlRateGroup');
+  var continuousParamsRow = document.getElementById('continuousParamsRow');
+
+  endpointType.addEventListener('change', function() {
+    var v = endpointType.value;
+    if (v === 'tte') {
+      effectSizeLabel.textContent = 'Hazard Ratio (HR)';
+      maxEventsLabel.textContent = 'Max Events';
+      scenarioLabel.textContent = 'True Effect Sizes (comma-separated HRs)';
+      document.getElementById('effectSize').value = '0.74';
+      document.getElementById('maxEvents').value = '800';
+      document.getElementById('scenarioEffects').value = '1.0, 0.90, 0.80, 0.74, 0.65';
+      controlRateGroup.style.display = 'none';
+      continuousParamsRow.style.display = 'none';
+    } else if (v === 'binary') {
+      effectSizeLabel.textContent = 'Odds Ratio (OR)';
+      maxEventsLabel.textContent = 'Max Sample Size (per group)';
+      scenarioLabel.textContent = 'True Effect Sizes (comma-separated ORs)';
+      document.getElementById('effectSize').value = '0.75';
+      document.getElementById('maxEvents').value = '2000';
+      document.getElementById('scenarioEffects').value = '1.0, 0.90, 0.80, 0.75, 0.65';
+      controlRateGroup.style.display = '';
+      continuousParamsRow.style.display = 'none';
+    } else {
+      effectSizeLabel.textContent = 'Mean Difference (MD)';
+      maxEventsLabel.textContent = 'Max Sample Size (per group)';
+      scenarioLabel.textContent = 'True Effect Sizes (comma-separated MDs)';
+      document.getElementById('effectSize').value = '0.3';
+      document.getElementById('maxEvents').value = '500';
+      document.getElementById('scenarioEffects').value = '0, 0.15, 0.25, 0.30, 0.40';
+      controlRateGroup.style.display = 'none';
+      continuousParamsRow.style.display = '';
+    }
+  });
+
+  /* Number of looks slider */
+  var numLooks = document.getElementById('numLooks');
+  var numLooksVal = document.getElementById('numLooksVal');
+  numLooks.addEventListener('input', function() {
+    numLooksVal.textContent = numLooks.value;
+    updateInfoFractionInputs();
+    updateSSRLookDropdown();
+  });
+
+  /* Custom info fraction checkbox */
+  var customInfoFrac = document.getElementById('customInfoFrac');
+  customInfoFrac.addEventListener('change', function() {
+    updateInfoFractionInputs();
+  });
+
+  function updateInfoFractionInputs() {
+    var K = parseInt(numLooks.value);
+    var container = document.getElementById('infoFracContainer');
+    container.innerHTML = '';
+    for (var i = 0; i < K; i++) {
+      var isLast = i === K - 1;
+      var defaultVal = isLast ? '1.000' : ((i + 1) / K).toFixed(3);
+      var lbl = document.createElement('div');
+      lbl.className = 'info-frac-label';
+      lbl.textContent = 'Look ' + (i + 1);
+      container.appendChild(lbl);
+      var inp = document.createElement('input');
+      inp.type = 'number';
+      inp.step = '0.01';
+      inp.min = '0.01';
+      inp.max = '1.00';
+      inp.value = defaultVal;
+      inp.className = 'info-frac-input';
+      inp.setAttribute('data-look', i);
+      if (isLast) inp.readOnly = true;
+      if (!customInfoFrac.checked) inp.readOnly = true;
+      container.appendChild(inp);
+    }
+  }
+
+  function updateSSRLookDropdown() {
+    var K = parseInt(numLooks.value);
+    var sel = document.getElementById('ssrLook');
+    sel.innerHTML = '';
+    for (var i = 0; i < K - 1; i++) {
+      var opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = 'Look ' + (i + 1);
+      sel.appendChild(opt);
+    }
+    if (K <= 1) {
+      var opt = document.createElement('option');
+      opt.value = '0';
+      opt.textContent = 'N/A (only 1 look)';
+      sel.appendChild(opt);
+    }
+  }
+
+  /* Spending function parameter visibility */
+  var efficacySpending = document.getElementById('efficacySpending');
+  var efficacyParamGroup = document.getElementById('efficacyParamGroup');
+  var efficacyParamLabel = document.getElementById('efficacyParamLabel');
+  efficacySpending.addEventListener('change', function() {
+    var v = efficacySpending.value;
+    if (v === 'landemets') {
+      efficacyParamGroup.style.display = '';
+      efficacyParamLabel.textContent = 'rho';
+      document.getElementById('efficacyParam').value = '3';
+      document.getElementById('efficacyParam').min = '0.5';
+      document.getElementById('efficacyParam').max = '10';
+    } else if (v === 'hsd') {
+      efficacyParamGroup.style.display = '';
+      efficacyParamLabel.textContent = 'gamma';
+      document.getElementById('efficacyParam').value = '-4';
+      document.getElementById('efficacyParam').min = '-10';
+      document.getElementById('efficacyParam').max = '10';
+    } else {
+      efficacyParamGroup.style.display = 'none';
+    }
+  });
+
+  /* Futility UI */
+  var futilityType = document.getElementById('futilityType');
+  var futilitySpendingGroup = document.getElementById('futilitySpendingGroup');
+  var futilityParamGroup = document.getElementById('futilityParamGroup');
+  futilityType.addEventListener('change', function() {
+    var v = futilityType.value;
+    futilitySpendingGroup.style.display = v === 'none' ? 'none' : '';
+    futilityParamGroup.style.display = v === 'none' ? 'none' : '';
+    updateFutilityParamVisibility();
+  });
+
+  var futilitySpending = document.getElementById('futilitySpending');
+  futilitySpending.addEventListener('change', updateFutilityParamVisibility);
+
+  function updateFutilityParamVisibility() {
+    var ft = futilityType.value;
+    if (ft === 'none') {
+      futilityParamGroup.style.display = 'none';
+      return;
+    }
+    var v = futilitySpending.value;
+    if (v === 'landemets') {
+      futilityParamGroup.style.display = '';
+      document.getElementById('futilityParamLabel').textContent = 'rho';
+      document.getElementById('futilityParam').value = '1';
+      document.getElementById('futilityParam').min = '0.5';
+      document.getElementById('futilityParam').max = '10';
+    } else if (v === 'hsd') {
+      futilityParamGroup.style.display = '';
+      document.getElementById('futilityParamLabel').textContent = 'gamma';
+      document.getElementById('futilityParam').value = '0';
+      document.getElementById('futilityParam').min = '-10';
+      document.getElementById('futilityParam').max = '10';
+    } else {
+      futilityParamGroup.style.display = 'none';
+    }
+  }
+
+  /* Scale toggle */
+  var scaleToggle = document.getElementById('scaleToggle');
+  scaleToggle.querySelectorAll('button').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      scaleToggle.querySelectorAll('button').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      STATE.currentScale = btn.getAttribute('data-scale');
+      if (STATE.boundaries) {
+        drawBoundaryChart('boundaryChart', STATE.boundaries, STATE.currentScale, STATE.overlayBoundaries);
+      }
+    });
+    btn.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); btn.click(); }
+    });
+  });
+
+  /* Overlay spending */
+  var overlaySpending = document.getElementById('overlaySpending');
+  overlaySpending.addEventListener('change', function() {
+    if (overlaySpending.value === 'none' || !STATE.boundaries) {
+      STATE.overlayBoundaries = null;
+    } else {
+      var overlayParam = 3;
+      if (overlaySpending.value === 'hsd') overlayParam = -4;
+      if (overlaySpending.value === 'landemets') overlayParam = 3;
+      var overlaySpendFn = getSpendingFunction(overlaySpending.value, overlayParam);
+      var alpha = parseFloat(document.getElementById('alphaInput').value) || 0.025;
+      var twoSided = document.getElementById('sidedness').value === 'two';
+      var infoFracs = getInfoFractions();
+      var futType = document.getElementById('futilityType').value;
+      var futParam = parseFloat(document.getElementById('futilityParam').value) || 1;
+      var futSpendFn = futType !== 'none' ? getSpendingFunction(document.getElementById('futilitySpending').value, futParam) : null;
+      var beta = 1 - (parseFloat(document.getElementById('targetPower').value) || 0.80);
+      STATE.overlayBoundaries = computeBoundaries(alpha, infoFracs, overlaySpendFn, twoSided, futType, futSpendFn, beta);
+    }
+    if (STATE.boundaries) {
+      drawBoundaryChart('boundaryChart', STATE.boundaries, STATE.currentScale, STATE.overlayBoundaries);
+    }
+  });
+
+  /* Initialize */
+  updateInfoFractionInputs();
+  updateSSRLookDropdown();
+  updateFutilityParamVisibility();
+
+  /* ===== EXAMPLES ===== */
+
+  document.getElementById('exDapaHF').addEventListener('click', function() {
+    document.getElementById('endpointType').value = 'tte';
+    document.getElementById('endpointType').dispatchEvent(new Event('change'));
+    document.getElementById('effectSize').value = '0.74';
+    document.getElementById('alphaInput').value = '0.025';
+    document.getElementById('sidedness').value = 'one';
+    document.getElementById('targetPower').value = '0.80';
+    document.getElementById('maxEvents').value = '800';
+    document.getElementById('allocRatio').value = '1';
+    document.getElementById('numLooks').value = '2';
+    numLooksVal.textContent = '2';
+    document.getElementById('efficacySpending').value = 'obf';
+    document.getElementById('efficacySpending').dispatchEvent(new Event('change'));
+    document.getElementById('futilityType').value = 'nonbinding';
+    document.getElementById('futilityType').dispatchEvent(new Event('change'));
+    document.getElementById('futilitySpending').value = 'landemets';
+    document.getElementById('futilitySpending').dispatchEvent(new Event('change'));
+    document.getElementById('futilityParam').value = '1';
+    document.getElementById('scenarioEffects').value = '1.0, 0.90, 0.80, 0.74, 0.65';
+    updateInfoFractionInputs();
+    updateSSRLookDropdown();
+    computeAndDisplay();
+  });
+
+  document.getElementById('exEmperor').addEventListener('click', function() {
+    document.getElementById('endpointType').value = 'tte';
+    document.getElementById('endpointType').dispatchEvent(new Event('change'));
+    document.getElementById('effectSize').value = '0.75';
+    document.getElementById('alphaInput').value = '0.025';
+    document.getElementById('sidedness').value = 'one';
+    document.getElementById('targetPower').value = '0.90';
+    document.getElementById('maxEvents').value = '800';
+    document.getElementById('allocRatio').value = '1';
+    document.getElementById('numLooks').value = '2';
+    numLooksVal.textContent = '2';
+    document.getElementById('efficacySpending').value = 'landemets';
+    document.getElementById('efficacySpending').dispatchEvent(new Event('change'));
+    document.getElementById('efficacyParam').value = '3';
+    document.getElementById('futilityType').value = 'none';
+    document.getElementById('futilityType').dispatchEvent(new Event('change'));
+    document.getElementById('scenarioEffects').value = '1.0, 0.90, 0.80, 0.75, 0.65';
+    updateInfoFractionInputs();
+    updateSSRLookDropdown();
+    computeAndDisplay();
+  });
+
+  document.getElementById('exSprint').addEventListener('click', function() {
+    document.getElementById('endpointType').value = 'binary';
+    document.getElementById('endpointType').dispatchEvent(new Event('change'));
+    document.getElementById('effectSize').value = '0.75';
+    document.getElementById('alphaInput').value = '0.05';
+    document.getElementById('sidedness').value = 'two';
+    document.getElementById('targetPower').value = '0.90';
+    document.getElementById('maxEvents').value = '2000';
+    document.getElementById('allocRatio').value = '1';
+    document.getElementById('controlRate').value = '0.20';
+    document.getElementById('numLooks').value = '4';
+    numLooksVal.textContent = '4';
+    document.getElementById('efficacySpending').value = 'landemets';
+    document.getElementById('efficacySpending').dispatchEvent(new Event('change'));
+    document.getElementById('efficacyParam').value = '2';
+    document.getElementById('futilityType').value = 'binding';
+    document.getElementById('futilityType').dispatchEvent(new Event('change'));
+    document.getElementById('futilitySpending').value = 'landemets';
+    document.getElementById('futilitySpending').dispatchEvent(new Event('change'));
+    document.getElementById('futilityParam').value = '1';
+    document.getElementById('scenarioEffects').value = '1.0, 0.90, 0.80, 0.75, 0.65';
+    updateInfoFractionInputs();
+    updateSSRLookDropdown();
+    computeAndDisplay();
+  });
+
+  /* ===== COMPUTE BOUNDARIES ===== */
+
+  document.getElementById('computeBtn').addEventListener('click', computeAndDisplay);
+
+  function getInfoFractions() {
+    var K = parseInt(document.getElementById('numLooks').value);
+    var inputs = document.querySelectorAll('.info-frac-input');
+    var fracs = [];
+    if (inputs.length === K) {
+      for (var i = 0; i < K; i++) {
+        fracs.push(parseFloat(inputs[i].value) || ((i + 1) / K));
+      }
+    } else {
+      for (var i = 0; i < K; i++) {
+        fracs.push((i + 1) / K);
+      }
+    }
+    /* Ensure last is 1 */
+    fracs[fracs.length - 1] = 1.0;
+    return fracs;
+  }
+
+  function computeAndDisplay() {
+    var alpha = parseFloat(document.getElementById('alphaInput').value) || 0.025;
+    var twoSided = document.getElementById('sidedness').value === 'two';
+    var infoFracs = getInfoFractions();
+    var spendType = document.getElementById('efficacySpending').value;
+    var spendParam = parseFloat(document.getElementById('efficacyParam').value) || 3;
+    var spendFn = getSpendingFunction(spendType, spendParam);
+    var futType = document.getElementById('futilityType').value;
+    var futSpendType = document.getElementById('futilitySpending').value;
+    var futParam = parseFloat(document.getElementById('futilityParam').value) || 1;
+    var futSpendFn = futType !== 'none' ? getSpendingFunction(futSpendType, futParam) : null;
+    var beta = 1 - (parseFloat(document.getElementById('targetPower').value) || 0.80);
+
+    var effectiveAlpha = twoSided ? alpha : alpha;
+
+    var boundaries = computeBoundaries(effectiveAlpha, infoFracs, spendFn, twoSided, futType, futSpendFn, beta);
+    STATE.boundaries = boundaries;
+
+    /* Store config for report */
+    STATE.config = {
+      alpha: alpha,
+      twoSided: twoSided,
+      infoFracs: infoFracs,
+      spendType: spendType,
+      spendParam: spendParam,
+      futType: futType,
+      futSpendType: futSpendType,
+      futParam: futParam,
+      endpointType: document.getElementById('endpointType').value,
+      effectSize: parseFloat(document.getElementById('effectSize').value),
+      maxEvents: parseFloat(document.getElementById('maxEvents').value),
+      targetPower: parseFloat(document.getElementById('targetPower').value),
+      allocRatio: parseInt(document.getElementById('allocRatio').value),
+      K: infoFracs.length
+    };
+
+    /* Overlay */
+    STATE.overlayBoundaries = null;
+    document.getElementById('overlaySpending').value = 'none';
+
+    /* Draw chart */
+    drawBoundaryChart('boundaryChart', boundaries, STATE.currentScale, null);
+
+    /* Fill table */
+    fillBoundaryTable(boundaries);
+
+    /* Generate report */
+    generateReport(boundaries, STATE.config);
+
+    /* Switch to boundaries tab */
+    document.querySelector('[data-tab="boundaries"]').click();
+  }
+
+  function fillBoundaryTable(boundaries) {
+    var tbody = document.getElementById('boundaryTableBody');
+    tbody.innerHTML = '';
+    boundaries.forEach(function(b) {
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td>' + escapeHtml(String(b.look)) + '</td>' +
+        '<td>' + fmt(b.infoFrac, 3) + '</td>' +
+        '<td>' + fmt(b.z_eff, 4) + '</td>' +
+        '<td>' + (b.z_fut > -10 ? fmt(b.z_fut, 4) : '-') + '</td>' +
+        '<td>' + fmt(b.nomP_eff, 6) + '</td>' +
+        '<td>' + (b.z_fut > -10 ? fmt(b.nomP_fut, 6) : '-') + '</td>' +
+        '<td>' + fmt(b.cumAlpha, 6) + '</td>';
+      tbody.appendChild(tr);
+    });
+  }
+
+  /* ===== OPERATING CHARACTERISTICS ===== */
+
+  document.getElementById('runSimBtn').addEventListener('click', function() {
+    if (!STATE.boundaries) {
+      alert('Please compute boundaries first on the Design tab.');
+      return;
+    }
+
+    var scenStr = document.getElementById('scenarioEffects').value;
+    var endpoint = document.getElementById('endpointType').value;
+    var scenarios = scenStr.split(',').map(function(s) { return parseFloat(s.trim()); }).filter(function(v) { return isFinite(v); });
+    if (scenarios.length === 0) {
+      alert('Please enter at least one scenario effect size.');
+      return;
+    }
+
+    /* Convert effect sizes to theta (drift parameter) */
+    var maxN = parseFloat(document.getElementById('maxEvents').value) || 800;
+    var twoSided = document.getElementById('sidedness').value === 'two';
+
+    var thetas = scenarios.map(function(eff) {
+      return effectToTheta(eff, endpoint, maxN);
+    });
+
+    var K = STATE.boundaries.length;
+    var zEff = STATE.boundaries.map(function(b) { return b.z_eff; });
+    var zFut = STATE.boundaries.map(function(b) { return b.z_fut > -10 ? b.z_fut : -100; });
+    var infoFracs = STATE.boundaries.map(function(b) { return b.infoFrac; });
+
+    var nSim = parseInt(document.getElementById('numSims').value) || 50000;
+    var seed = parseInt(document.getElementById('simSeed').value) || 42;
+
+    document.getElementById('simProgress').style.display = '';
+    document.getElementById('simProgressFill').style.width = '0%';
+    document.getElementById('simStatus').textContent = 'Running ' + nSim.toLocaleString() + ' simulations per scenario...';
+    document.getElementById('cancelSimBtn').style.display = '';
+    document.getElementById('runSimBtn').disabled = true;
+
+    runSimulation({
+      nSim: nSim,
+      K: K,
+      infoFracs: infoFracs,
+      zEff: zEff,
+      zFut: zFut,
+      scenarios: thetas,
+      twoSided: twoSided,
+      seed: seed,
+      maxN: maxN
+    }, function(progress) {
+      document.getElementById('simProgressFill').style.width = (progress * 100).toFixed(1) + '%';
+    }, function(results) {
+      document.getElementById('simProgress').style.display = 'none';
+      document.getElementById('simStatus').textContent = 'Simulation complete.';
+      document.getElementById('cancelSimBtn').style.display = 'none';
+      document.getElementById('runSimBtn').disabled = false;
+      document.getElementById('ocResults').style.display = '';
+
+      /* Store results with original scenario labels */
+      STATE.ocResults = results.map(function(r, i) {
+        r.scenarioLabel = scenarios[i];
+        return r;
+      });
+
+      displayOCResults(STATE.ocResults, scenarios, K, endpoint, maxN);
+    });
+  });
+
+  document.getElementById('cancelSimBtn').addEventListener('click', function() {
+    if (currentWorker) {
+      currentWorker.terminate();
+      currentWorker = null;
+    }
+    document.getElementById('simProgress').style.display = 'none';
+    document.getElementById('simStatus').textContent = 'Simulation cancelled.';
+    document.getElementById('cancelSimBtn').style.display = 'none';
+    document.getElementById('runSimBtn').disabled = false;
+  });
+
+  function effectToTheta(effect, endpoint, maxN) {
+    /* Convert effect size to drift parameter theta such that
+       E[Z_k] = theta * sqrt(t_k) under the alternative.
+       For TTE: theta = log(HR) * sqrt(d/4) where d = maxEvents
+       For binary: theta = log(OR) * sqrt(N * p(1-p) / 4) [approx]
+       For continuous: theta = MD * sqrt(N / (4 * sigma^2)) */
+    if (endpoint === 'tte') {
+      /* Z = log(HR) * sqrt(d/4) at full information */
+      return Math.log(effect) * Math.sqrt(maxN / 4);
+    } else if (endpoint === 'binary') {
+      /* Approximate: theta = log(OR) * sqrt(N/(4*v)) where v ~ 1/(p*(1-p)) */
+      var p0 = parseFloat(document.getElementById('controlRate').value) || 0.20;
+      var or = effect;
+      var p1 = (p0 * or) / (1 - p0 + p0 * or);
+      var pBar = (p0 + p1) / 2;
+      /* Under H1, Z ~ log(OR) * sqrt(N * pBar*(1-pBar) / 4) approximately */
+      return Math.log(or) * Math.sqrt(maxN * pBar * (1 - pBar) / 4);
+    } else {
+      /* Continuous: theta = MD * sqrt(N / (4*sigma^2)) */
+      var sd = parseFloat(document.getElementById('sdInput').value) || 1.0;
+      return effect * Math.sqrt(maxN / (4 * sd * sd));
+    }
+  }
+
+  function displayOCResults(results, scenarios, K, endpoint, maxN) {
+    /* Power curve */
+    var effLabel = endpoint === 'tte' ? 'True HR' : (endpoint === 'binary' ? 'True OR' : 'True MD');
+    drawLineChart('powerChart', [{
+      label: 'Power',
+      data: results.map(function(r, i) { return {x: scenarios[i], y: r.power}; })
+    }], effLabel, 'Power', 'Power Curve');
+
+    /* Target power reference line is handled via the chart drawing */
+
+    /* ASN curve */
+    drawLineChart('asnChart', [{
+      label: 'Expected N',
+      data: results.map(function(r, i) { return {x: scenarios[i], y: r.asn}; })
+    }], effLabel, 'Expected Sample Size', 'Average Sample Number (ASN)');
+
+    /* Stopping probability bars */
+    var barData = results.map(function(r, i) {
+      return {
+        label: effLabel + '=' + fmt(scenarios[i], 2),
+        looks: r.stopProbs
+      };
+    });
+    drawStoppingBars('stoppingChart', barData, scenarios, K);
+
+    /* Summary table */
+    var thead = document.getElementById('ocTableHead');
+    thead.innerHTML = '<th>' + escapeHtml(effLabel) + '</th><th>Power</th><th>ASN</th><th>Early Stop %</th>';
+    for (var k = 0; k < K; k++) {
+      thead.innerHTML += '<th>P(stop Look ' + (k+1) + ')</th>';
+    }
+
+    var tbody = document.getElementById('ocTableBody');
+    tbody.innerHTML = '';
+    results.forEach(function(r, i) {
+      var tr = document.createElement('tr');
+      var html = '<td>' + fmt(scenarios[i], 3) + '</td>' +
+                 '<td>' + fmt(r.power, 4) + '</td>' +
+                 '<td>' + fmt(r.asn, 0) + '</td>' +
+                 '<td>' + fmt(r.earlyStop * 100, 1) + '%</td>';
+      r.stopProbs.forEach(function(sp) {
+        html += '<td>' + fmt((sp.probEff + sp.probFut) * 100, 1) + '%</td>';
+      });
+      tr.innerHTML = html;
+      /* Highlight null hypothesis row */
+      var isNull = (endpoint === 'tte' && Math.abs(scenarios[i] - 1.0) < 0.001) ||
+                   (endpoint === 'binary' && Math.abs(scenarios[i] - 1.0) < 0.001) ||
+                   (endpoint === 'continuous' && Math.abs(scenarios[i]) < 0.001);
+      if (isNull) {
+        tr.style.fontWeight = '600';
+      }
+      tbody.appendChild(tr);
+    });
+  }
+
+  /* ===== SSR ===== */
+
+  document.getElementById('runSSRBtn').addEventListener('click', function() {
+    if (!STATE.boundaries) {
+      alert('Please compute boundaries first on the Design tab.');
+      return;
+    }
+    var K = STATE.boundaries.length;
+    if (K <= 1) {
+      alert('SSR requires at least 2 looks (1 interim + 1 final).');
+      return;
+    }
+
+    var scenStr = document.getElementById('scenarioEffects').value;
+    var endpoint = document.getElementById('endpointType').value;
+    var scenarios = scenStr.split(',').map(function(s) { return parseFloat(s.trim()); }).filter(function(v) { return isFinite(v); });
+    if (scenarios.length === 0) {
+      alert('Please enter scenario effect sizes on the OC tab.');
+      return;
+    }
+
+    var maxN = parseFloat(document.getElementById('maxEvents').value) || 800;
+    var twoSided = document.getElementById('sidedness').value === 'two';
+    var alpha = parseFloat(document.getElementById('alphaInput').value) || 0.025;
+
+    var thetas = scenarios.map(function(eff) { return effectToTheta(eff, endpoint, maxN); });
+
+    var zEff = STATE.boundaries.map(function(b) { return b.z_eff; });
+    var zFut = STATE.boundaries.map(function(b) { return b.z_fut > -10 ? b.z_fut : -100; });
+    var infoFracs = STATE.boundaries.map(function(b) { return b.infoFrac; });
+
+    var nSim = parseInt(document.getElementById('numSims').value) || 50000;
+    var seed = parseInt(document.getElementById('simSeed').value) || 42;
+    var ssrLook = parseInt(document.getElementById('ssrLook').value) || 0;
+    var ssrCPLow = parseFloat(document.getElementById('ssrCPLow').value) || 0.36;
+    var ssrCPHigh = parseFloat(document.getElementById('ssrCPHigh').value) || 0.80;
+    var ssrMaxFold = parseFloat(document.getElementById('ssrMaxFold').value) || 2.0;
+    var ssrTargetCP = parseFloat(document.getElementById('ssrTargetCP').value) || 0.80;
+    var zAlpha = twoSided ? normalQuantile(1 - alpha/2) : normalQuantile(1 - alpha);
+
+    document.getElementById('ssrProgress').style.display = '';
+    document.getElementById('ssrProgressFill').style.width = '0%';
+    document.getElementById('ssrStatus').textContent = 'Running SSR simulation...';
+    document.getElementById('cancelSSRBtn').style.display = '';
+    document.getElementById('runSSRBtn').disabled = true;
+
+    /* Run SSR simulation */
+    runSSRSimulation({
+      nSim: nSim,
+      K: K,
+      infoFracs: infoFracs,
+      zEff: zEff,
+      zFut: zFut,
+      scenarios: thetas,
+      twoSided: twoSided,
+      seed: seed + 99999,
+      maxN: maxN,
+      isSSR: true,
+      ssrLook: ssrLook,
+      ssrCPLow: ssrCPLow,
+      ssrCPHigh: ssrCPHigh,
+      ssrMaxFold: ssrMaxFold,
+      ssrTargetCP: ssrTargetCP,
+      zAlpha: zAlpha
+    }, function(progress) {
+      document.getElementById('ssrProgressFill').style.width = (progress * 100).toFixed(1) + '%';
+    }, function(results) {
+      document.getElementById('ssrProgress').style.display = 'none';
+      document.getElementById('ssrStatus').textContent = 'SSR simulation complete.';
+      document.getElementById('cancelSSRBtn').style.display = 'none';
+      document.getElementById('runSSRBtn').disabled = false;
+      document.getElementById('ssrResults').style.display = '';
+
+      STATE.ssrResults = results;
+      displaySSRResults(results, scenarios, endpoint);
+    });
+  });
+
+  document.getElementById('cancelSSRBtn').addEventListener('click', function() {
+    if (currentSSRWorker) {
+      currentSSRWorker.terminate();
+      currentSSRWorker = null;
+    }
+    document.getElementById('ssrProgress').style.display = 'none';
+    document.getElementById('ssrStatus').textContent = 'SSR simulation cancelled.';
+    document.getElementById('cancelSSRBtn').style.display = 'none';
+    document.getElementById('runSSRBtn').disabled = false;
+  });
+
+  function displaySSRResults(results, scenarios, endpoint) {
+    var effLabel = endpoint === 'tte' ? 'True HR' : (endpoint === 'binary' ? 'True OR' : 'True MD');
+
+    /* Power comparison chart */
+    var fixedData = results.map(function(r, i) { return {x: scenarios[i], y: r.power}; });
+    var ssrData = results.map(function(r, i) { return {x: scenarios[i], y: r.ssrPower != null ? r.ssrPower : r.power}; });
+
+    drawLineChart('ssrChart', [
+      {label: 'Fixed Design', data: fixedData, color: 'var(--accent)'},
+      {label: 'SSR-Adaptive', data: ssrData, color: 'var(--success)', dashed: true}
+    ], effLabel, 'Power', 'Power: Fixed vs SSR-Adaptive');
+
+    /* SSR table */
+    var tbody = document.getElementById('ssrTableBody');
+    tbody.innerHTML = '';
+    results.forEach(function(r, i) {
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td>' + fmt(scenarios[i], 3) + '</td>' +
+        '<td>' + fmt(r.power, 4) + '</td>' +
+        '<td>' + fmt(r.ssrPower != null ? r.ssrPower : r.power, 4) + '</td>' +
+        '<td>' + fmt(r.asn, 0) + '</td>' +
+        '<td>' + fmt(r.ssrASN != null ? r.ssrASN : r.asn, 0) + '</td>' +
+        '<td>' + fmt((r.ssrTriggered || 0) * 100, 1) + '%</td>' +
+        '<td>' + fmt(r.ssrMeanFold || 1.0, 2) + 'x</td>';
+      tbody.appendChild(tr);
+    });
+  }
+
+  /* Zone indicator update */
+  function updateZoneIndicator() {
+    var cpLow = parseFloat(document.getElementById('ssrCPLow').value) || 0.36;
+    var cpHigh = parseFloat(document.getElementById('ssrCPHigh').value) || 0.80;
+    var zi = document.getElementById('zoneIndicator');
+    var unfavPct = cpLow * 100;
+    var promPct = (cpHigh - cpLow) * 100;
+    var favPct = (1 - cpHigh) * 100;
+    zi.innerHTML =
+      '<div class="zone zone-unfav" style="width:' + unfavPct + '%">Unfavorable</div>' +
+      '<div class="zone zone-promising" style="width:' + promPct + '%">Promising</div>' +
+      '<div class="zone zone-favorable" style="width:' + favPct + '%">Favorable</div>';
+  }
+  document.getElementById('ssrCPLow').addEventListener('input', updateZoneIndicator);
+  document.getElementById('ssrCPHigh').addEventListener('input', updateZoneIndicator);
+  updateZoneIndicator();
+
+
+  /* ===== 9. REPORT GENERATION ===== */
+
+  function generateReport(boundaries, cfg) {
+    /* Methods text */
+    var K = cfg.K;
+    var fracStr = cfg.infoFracs.map(function(f) { return fmt(f, 2); }).join(', ');
+    var spendName = getSpendingName(cfg.spendType, cfg.spendParam);
+    var sidedStr = cfg.twoSided ? 'two-sided alpha = ' + fmt(cfg.alpha, 3) : 'one-sided alpha = ' + fmt(cfg.alpha, 3);
+
+    var futDesc = '';
+    if (cfg.futType === 'none') {
+      futDesc = 'No futility boundary was specified.';
+    } else if (cfg.futType === 'binding') {
+      futDesc = 'Binding futility boundaries were computed using ' + getSpendingName(cfg.futSpendType, cfg.futParam) + ' beta-spending function.';
+    } else {
+      futDesc = 'Non-binding futility boundaries were computed using ' + getSpendingName(cfg.futSpendType, cfg.futParam) + ' beta-spending function.';
+    }
+
+    var endpointDesc = '';
+    if (cfg.endpointType === 'tte') {
+      endpointDesc = 'a hazard ratio (HR) of ' + fmt(cfg.effectSize, 2) + ' with a maximum of ' + fmt(cfg.maxEvents, 0) + ' events';
+    } else if (cfg.endpointType === 'binary') {
+      endpointDesc = 'an odds ratio (OR) of ' + fmt(cfg.effectSize, 2) + ' with a maximum of ' + fmt(cfg.maxEvents, 0) + ' patients per group';
+    } else {
+      endpointDesc = 'a mean difference (MD) of ' + fmt(cfg.effectSize, 2) + ' with a maximum of ' + fmt(cfg.maxEvents, 0) + ' patients per group';
+    }
+
+    var interimWord = K > 2 ? (K - 1) + ' interim analyses' : '1 interim analysis';
+    if (K === 1) interimWord = 'no interim analyses (fixed design)';
+
+    var methodsHtml =
+      'This trial uses a group-sequential design with ' + interimWord +
+      ' at information fractions [' + escapeHtml(fracStr) + ']. ' +
+      'Efficacy boundaries were computed using the ' + escapeHtml(spendName) +
+      ' alpha-spending function with overall ' + escapeHtml(sidedStr) + '. ' +
+      escapeHtml(futDesc) + ' ' +
+      'The design has ' + fmt(cfg.targetPower * 100, 0) + '% power to detect ' +
+      escapeHtml(endpointDesc) + '. ' +
+      'The allocation ratio is ' + cfg.allocRatio + ':1.';
+
+    document.getElementById('methodsText').innerHTML = methodsHtml;
+
+    /* Report boundary table */
+    var tableHtml = '<table class="data-table">' +
+      '<thead><tr><th>Look</th><th>Info Fraction</th><th>Z (Eff)</th><th>Z (Fut)</th>' +
+      '<th>Nominal p (Eff)</th><th>Cum Alpha</th></tr></thead><tbody>';
+    boundaries.forEach(function(b) {
+      tableHtml += '<tr>' +
+        '<td>' + b.look + '</td>' +
+        '<td>' + fmt(b.infoFrac, 3) + '</td>' +
+        '<td>' + fmt(b.z_eff, 4) + '</td>' +
+        '<td>' + (b.z_fut > -10 ? fmt(b.z_fut, 4) : '-') + '</td>' +
+        '<td>' + fmt(b.nomP_eff, 6) + '</td>' +
+        '<td>' + fmt(b.cumAlpha, 6) + '</td></tr>';
+    });
+    tableHtml += '</tbody></table>';
+    document.getElementById('reportBoundaryTable').innerHTML = tableHtml;
+
+    /* R code (rpact) */
+    var rSided = cfg.twoSided ? 2 : 1;
+    var rTypeOfDesign = 'OF';
+    var rTypeParam = '';
+    if (cfg.spendType === 'obf') {
+      rTypeOfDesign = '"asOF"';
+    } else if (cfg.spendType === 'pocock') {
+      rTypeOfDesign = '"asP"';
+    } else if (cfg.spendType === 'landemets') {
+      rTypeOfDesign = '"asKD"';
+      rTypeParam = ',\n  gammaA = ' + fmt(cfg.spendParam, 1);
+    } else if (cfg.spendType === 'hsd') {
+      rTypeOfDesign = '"asHSD"';
+      rTypeParam = ',\n  gammaA = ' + fmt(cfg.spendParam, 1);
+    }
+
+    var rInfoRates = 'c(' + cfg.infoFracs.map(function(f) { return fmt(f, 3); }).join(', ') + ')';
+    var rBeta = 1 - cfg.targetPower;
+
+    var rpactCode =
+      'library(rpact)\n\n' +
+      '# Design specification\n' +
+      'design <- getDesignGroupSequential(\n' +
+      '  sided = ' + rSided + ',\n' +
+      '  alpha = ' + fmt(cfg.alpha, 4) + ',\n' +
+      '  beta = ' + fmt(rBeta, 2) + ',\n' +
+      '  informationRates = ' + rInfoRates + ',\n' +
+      '  typeOfDesign = ' + rTypeOfDesign + rTypeParam;
+
+    if (cfg.futType !== 'none') {
+      var rFutType = cfg.futType === 'binding' ? '"binding"' : '"none"';
+      rpactCode += ',\n  futilityBounds = ' + rFutType;
+      rpactCode += ',\n  bindingFutility = ' + (cfg.futType === 'binding' ? 'TRUE' : 'FALSE');
+    }
+    rpactCode += '\n)\n\nsummary(design)\nplot(design)\n';
+
+    /* Add sample size / simulation */
+    if (cfg.endpointType === 'tte') {
+      rpactCode += '\n# Sample size\n' +
+        'sampleSize <- getSampleSizeSurvival(\n' +
+        '  design = design,\n' +
+        '  hazardRatio = ' + fmt(cfg.effectSize, 3) + ',\n' +
+        '  allocationRatioPlanned = ' + cfg.allocRatio + '\n)\nsummary(sampleSize)\n';
+    }
+
+    document.getElementById('rCodeContent').textContent = rpactCode;
+
+    /* R code (gsDesign) */
+    var gsType = '';
+    if (cfg.spendType === 'obf') gsType = 'sfLDOF';
+    else if (cfg.spendType === 'pocock') gsType = 'sfLDPocock';
+    else if (cfg.spendType === 'landemets') gsType = 'sfPower';
+    else if (cfg.spendType === 'hsd') gsType = 'sfHSD';
+
+    var gsCode = 'library(gsDesign)\n\n' +
+      '# Design specification\n' +
+      'design <- gsDesign(\n' +
+      '  k = ' + K + ',\n' +
+      '  test.type = ' + (cfg.twoSided ? 2 : 1) + ',\n' +
+      '  alpha = ' + fmt(cfg.alpha, 4) + ',\n' +
+      '  beta = ' + fmt(rBeta, 2) + ',\n' +
+      '  timing = ' + rInfoRates + ',\n' +
+      '  sfu = ' + gsType;
+
+    if (cfg.spendType === 'landemets') {
+      gsCode += ',\n  sfupar = ' + fmt(cfg.spendParam, 1);
+    } else if (cfg.spendType === 'hsd') {
+      gsCode += ',\n  sfupar = ' + fmt(cfg.spendParam, 1);
+    }
+    gsCode += '\n)\n\nprint(design)\nplot(design)\n';
+
+    document.getElementById('gsDesignCodeContent').textContent = gsCode;
+  }
+
+  /* Copy buttons */
+  document.getElementById('copyMethodsBtn').addEventListener('click', function() {
+    var text = document.getElementById('methodsText').innerText;
+    copyToClipboard(text, this);
+  });
+
+  document.getElementById('copyBoundaryTableBtn').addEventListener('click', function() {
+    var table = document.getElementById('reportBoundaryTable');
+    var text = tableToTSV(table.querySelector('table'));
+    copyToClipboard(text, this);
+  });
+
+  document.getElementById('copyRCodeBtn').addEventListener('click', function() {
+    var text = document.getElementById('rCodeContent').textContent;
+    copyToClipboard(text, this);
+  });
+
+  document.getElementById('copyGsDesignBtn').addEventListener('click', function() {
+    var text = document.getElementById('gsDesignCodeContent').textContent;
+    copyToClipboard(text, this);
+  });
+
+  function copyToClipboard(text, btn) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function() {
+        var orig = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(function() { btn.textContent = orig; }, 1500);
+      });
+    } else {
+      /* Fallback */
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch(e) {}
+      document.body.removeChild(ta);
+      var orig = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(function() { btn.textContent = orig; }, 1500);
+    }
+  }
+
+  function tableToTSV(table) {
+    if (!table) return '';
+    var rows = table.querySelectorAll('tr');
+    var lines = [];
+    rows.forEach(function(row) {
+      var cells = row.querySelectorAll('th, td');
+      var vals = [];
+      cells.forEach(function(c) { vals.push(c.textContent.trim()); });
+      lines.push(vals.join('\t'));
+    });
+    return lines.join('\n');
+  }
+
+})();
+</script>
+</body>
+</html>
