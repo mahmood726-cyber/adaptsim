@@ -17,7 +17,7 @@ Corresponding author: mahmood.ahmad2@nhs.net
 
 **Results:** Boundary computations use recursive numerical integration (Armitage-McPherson-Rowe algorithm with 32-point Gauss-Legendre quadrature), achieving agreement with rpact to four decimal places on O'Brien-Fleming boundaries. Monte Carlo simulation (10,000-100,000 trials via Web Workers) produces Type I error within 0.002 of the nominal alpha. The tool includes three pre-loaded clinical examples based on DAPA-HF, EMPEROR-Reduced, and SPRINT, and exports equivalent R code for rpact and gsDesign.
 
-**Conclusions:** AdaptSim democratises adaptive trial design by providing a free, instant, offline tool that matches commercial software accuracy. It is available at [GITHUB_URL_PLACEHOLDER] and requires only a web browser.
+**Conclusions:** AdaptSim democratises adaptive trial design by providing a free, instant, offline tool that matches commercial software accuracy. It is available at https://github.com/mahmood726-cyber/adaptsim and requires only a web browser.
 
 ---
 
@@ -112,11 +112,11 @@ Key advantages over existing tools:
 
 ## Conclusions
 
-AdaptSim is the first browser-based adaptive trial design simulator, providing free, instant access to group-sequential boundary computation, operating characteristics simulation, and sample size re-estimation. It matches commercial software accuracy and exports equivalent R code for verification. The tool is available at [GITHUB_URL_PLACEHOLDER].
+AdaptSim is the first browser-based adaptive trial design simulator, providing free, instant access to group-sequential boundary computation, operating characteristics simulation, and sample size re-estimation. It matches commercial software accuracy and exports equivalent R code for verification. The tool is available at https://github.com/mahmood726-cyber/adaptsim.
 
 ## Data availability statement
 
-AdaptSim is freely available as open-source software at [GITHUB_URL_PLACEHOLDER]. No installation is required; the tool runs entirely in the browser. The three built-in clinical trial examples (DAPA-HF, EMPEROR-Reduced, SPRINT) use published trial parameters.
+AdaptSim is freely available as open-source software at https://github.com/mahmood726-cyber/adaptsim. No installation is required; the tool runs entirely in the browser. The three built-in clinical trial examples (DAPA-HF, EMPEROR-Reduced, SPRINT) use published trial parameters.
 
 ## Funding
 
