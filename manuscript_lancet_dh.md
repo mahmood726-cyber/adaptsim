@@ -1,11 +1,11 @@
 # AdaptSim: An Open-Access Browser-Based Simulator for Adaptive Group-Sequential Clinical Trial Design
 
 ## Authors
-[AUTHOR_NAME_PLACEHOLDER]^1
+Mahmood Ahmad^1
 
-^1 [AFFILIATION_PLACEHOLDER]
+^1 Royal Free Hospital, London, UK
 
-Corresponding author: [EMAIL_PLACEHOLDER]
+Corresponding author: mahmood.ahmad2@nhs.net
 
 ---
 
@@ -113,6 +113,18 @@ Key advantages over existing tools:
 ## Conclusions
 
 AdaptSim is the first browser-based adaptive trial design simulator, providing free, instant access to group-sequential boundary computation, operating characteristics simulation, and sample size re-estimation. It matches commercial software accuracy and exports equivalent R code for verification. The tool is available at [GITHUB_URL_PLACEHOLDER].
+
+## Data availability statement
+
+AdaptSim is freely available as open-source software at [GITHUB_URL_PLACEHOLDER]. No installation is required; the tool runs entirely in the browser. The three built-in clinical trial examples (DAPA-HF, EMPEROR-Reduced, SPRINT) use published trial parameters.
+
+## Funding
+
+[FUNDING_PLACEHOLDER]
+
+## Competing interests
+
+The authors declare no competing interests. AdaptSim is not affiliated with or endorsed by any pharmaceutical company or regulatory agency.
 
 ## References
 
