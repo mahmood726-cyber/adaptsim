@@ -3,8 +3,8 @@
   "slug": "adaptsim",
   "author": "Mahmood Ahmad",
   "date": "2026-03-26",
-  "body": "Can a browser-based tool reproduce adaptive group-sequential trial designs with the accuracy of established software while remaining usable at the point of care? We implemented the Armitage-McPherson-Rowe recursive integration algorithm with 32-point Gauss-Legendre quadrature in a single-file browser application supporting four alpha-spending functions and both binding and non-binding futility rules. AdaptSim calculates monitoring boundaries, simulates operating characteristics with up to 100,000 Monte Carlo trials, and exports protocol-ready outputs with matching R code. Boundary calculations matched rpact to four decimal places, with mean sensitivity to true effect of 0.98 (95% CI 0.96 to 0.99) and Monte Carlo type I error within 0.002 of nominal alpha. Three worked examples based on DAPA-HF, EMPEROR-Reduced, and SPRINT showed that the interface can support realistic cardiovascular trial scenarios without local installation. A free browser implementation could widen access to adaptive design methods that otherwise depend on specialist software and scripting skills. The current version is limited to group-sequential designs and does not yet support adaptive enrichment or platform trials.",
-  "word_count": 164,
+  "body": "Can a browser-based tool reproduce adaptive group-sequential trial designs with the accuracy of established software while remaining usable at the point of care? We implemented the Armitage-McPherson-Rowe recursive integration algorithm with 32-point Gauss-Legendre quadrature in a single-file browser application supporting four alpha-spending functions and both binding and non-binding futility rules. AdaptSim calculates monitoring boundaries, simulates operating characteristics with up to 100,000 Monte Carlo trials, and exports protocol-ready outputs. Boundary calculations matched rpact to four decimal places, with mean sensitivity to true effect of 0.98 (95% CI 0.96 to 0.99) and Monte Carlo type I error within 0.002 of nominal alpha. Three worked examples based on DAPA-HF, EMPEROR-Reduced, and SPRINT showed that the interface supports realistic cardiovascular trial scenarios without local installation. A free browser implementation could widen access to adaptive design methods that otherwise depend on specialist software. The current version is limited to group-sequential designs and does not yet support adaptive enrichment or platform trials.",
+  "word_count": 156,
   "sentence_count": 7,
   "sentences": [
     {
@@ -17,7 +17,7 @@
     },
     {
       "role": "Method",
-      "text": "AdaptSim calculates monitoring boundaries, simulates operating characteristics with up to 100,000 Monte Carlo trials, and exports protocol-ready outputs with matching R code."
+      "text": "AdaptSim calculates monitoring boundaries, simulates operating characteristics with up to 100,000 Monte Carlo trials, and exports protocol-ready outputs."
     },
     {
       "role": "Primary result",
@@ -25,11 +25,11 @@
     },
     {
       "role": "Robustness",
-      "text": "Three worked examples based on DAPA-HF, EMPEROR-Reduced, and SPRINT showed that the interface can support realistic cardiovascular trial scenarios without local installation."
+      "text": "Three worked examples based on DAPA-HF, EMPEROR-Reduced, and SPRINT showed that the interface supports realistic cardiovascular trial scenarios without local installation."
     },
     {
       "role": "Interpretation",
-      "text": "A free browser implementation could widen access to adaptive design methods that otherwise depend on specialist software and scripting skills."
+      "text": "A free browser implementation could widen access to adaptive design methods that otherwise depend on specialist software."
     },
     {
       "role": "Boundary",
@@ -49,7 +49,7 @@
   "type": "methods",
   "primary_estimand": "Boundary computation accuracy vs rpact (decimal places of agreement)",
   "validation": {
-    "status": "fail",
+    "status": "pass",
     "checks": [
       {
         "name": "single paragraph",
@@ -63,8 +63,8 @@
       },
       {
         "name": "word count",
-        "ok": false,
-        "detail": "Found 164 words."
+        "ok": true,
+        "detail": "Found 156 words."
       },
       {
         "name": "no headings",

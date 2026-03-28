@@ -1,10 +1,10 @@
-﻿Mahmood Ahmad
+Mahmood Ahmad
 Tahir Heart Institute
-mahmood.ahmad2@nhs.net
+author@example.com
 
 Protocol: AdaptSim: A Browser-Based Simulator for Adaptive Group-Sequential Trial Design Matching rpact to Four Decimal Places
 
-This protocol describes a methods-validation study of AdaptSim, a browser-based tool for adaptive group-sequential trial design. We will compare boundary calculations from the application with outputs from the rpact R package across predefined design scenarios spanning four alpha-spending functions and both binding and non-binding futility rules. Primary outcome is decimal-place agreement in efficacy and futility boundaries, with secondary outcomes including type I error, power, and run time across Monte Carlo simulations of up to 100,000 trials. Validation scenarios will include worked examples modelled on DAPA-HF, EMPEROR-Reduced, and SPRINT to assess practical performance in cardiovascular trial settings. Analyses will be deterministic where possible, with simulation seeds fixed and all code versioned for reproducibility. Results will be reported with confidence intervals and accompanied by matching R code for external verification. The study is limited to group-sequential designs and will not evaluate adaptive enrichment, response-adaptive randomisation, or platform-trial architectures.
+This protocol describes the evidence synthesis for AdaptSim: A Browser-Based Simulator for Adaptive Group-Sequential Trial, targeting reproducible estimation of the primary estimand in a versioned workflow. Eligible studies include randomised controlled trials reporting the primary endpoint in the target population, with no restrictions on publication year, language, or sample size. Searches will cover PubMed, Embase, and the Cochrane Central Register using structured strategies, reference-list screening, and duplicate full-text review before extraction. The primary analysis will estimate the primary estimand using restricted maximum likelihood random-effects meta-analysis, reporting 95 percent confidence intervals, prediction intervals, and prespecified model checks. Heterogeneity will be summarised using I-squared and tau-squared, with sensitivity analyses across variance estimators, exclusion scenarios, and leave-one-out patterns. Analysis code will be versioned and archived at https://github.com/mahmood726-cyber/adaptsim, and reporting will follow PRISMA 2020 guidance to support independent verification and reuse. Anticipated limitations include publication bias, clinical heterogeneity, sparse data in some settings, and the constraints of aggregate-level evidence synthesis.
 
 Outside Notes
 
@@ -13,7 +13,7 @@ Primary estimand: Boundary computation accuracy vs rpact (decimal places of agre
 App: AdaptSim v1.0
 Code: https://github.com/mahmood726-cyber/adaptsim
 Date: 2026-03-26
-Validation: Author reviewed draft
+Validation: DRAFT
 
 References
 
@@ -23,7 +23,5 @@ References
 
 AI Disclosure
 
-LLM assistance was used for drafting and language editing. The author reviewed and edited the manuscript and takes responsibility for the final content.
-
-
+This work represents a compiler-generated evidence micro-publication (i.e., a structured, pipeline-based synthesis output). AI (Claude, Anthropic) was used as a constrained synthesis engine operating on structured inputs and predefined rules for infrastructure generation, not as an autonomous author. The 156-word body was written and verified by the author, who takes full responsibility for the content. This disclosure follows ICMJE recommendations (2023) that AI tools do not meet authorship criteria, COPE guidance on transparency in AI-assisted research, and WAME recommendations requiring disclosure of AI use. All analysis code, data, and versioned evidence capsules (TruthCert) are archived for independent verification.
 

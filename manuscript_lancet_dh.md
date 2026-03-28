@@ -3,9 +3,11 @@
 ## Authors
 Mahmood Ahmad^1
 
-^1 Royal Free Hospital, London, UK
+^1 Royal Free Hospital, London, United Kingdom
 
 Corresponding author: mahmood.ahmad2@nhs.net
+
+ORCID: 0009-0003-7781-4478
 
 ---
 
@@ -120,7 +122,7 @@ AdaptSim is freely available as open-source software at https://github.com/mahmo
 
 ## Funding
 
-[FUNDING_PLACEHOLDER]
+No external funding was received for this work.
 
 ## Competing interests
 
