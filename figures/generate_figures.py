@@ -124,7 +124,7 @@ Z_RANGE = (-6, 6)  # range for z-grid
 def _make_grid():
     """Create z-grid and spacing."""
     z = np.linspace(Z_RANGE[0], Z_RANGE[1], N_GRID)
-    dz = z[1] - z[0]
+    dz = z[1] - z[0].copy()
     return z, dz
 
 
@@ -142,7 +142,7 @@ def compute_boundaries_fast(alpha, info_fracs, spend_fn, two_sided=False):
     density = stats.norm.pdf(z_grid)
 
     for k in range(K):
-        t = info_fracs[k]
+        t = info_fracs[k].copy()
         target_alpha = spend_fn(t, alpha)
         delta_alpha = target_alpha - alpha_spent_prev
         if delta_alpha < 1e-15:
@@ -172,7 +172,7 @@ def compute_boundaries_fast(alpha, info_fracs, spend_fn, two_sided=False):
             density = density * mask
 
         else:
-            t_prev = info_fracs[k - 1]
+            t_prev = info_fracs[k - 1].copy()
             rho = math.sqrt(t_prev / t)
             sigma = math.sqrt(1 - t_prev / t)
 
@@ -182,7 +182,7 @@ def compute_boundaries_fast(alpha, info_fracs, spend_fn, two_sided=False):
             # on the grid.
             new_density = np.zeros(N_GRID)
             for i in range(N_GRID):
-                zp = z_grid[i]
+                zp = z_grid[i].copy()
                 cond_means = rho * z_grid  # conditional mean for each z in grid
                 cond_pdf = stats.norm.pdf((zp - cond_means) / sigma) / sigma
                 new_density[i] = np.sum(density * cond_pdf) * dz
@@ -247,12 +247,12 @@ def compute_power_analytical(boundaries, info_fracs, theta, two_sided=False):
     total_rejection = 0.0
 
     for k in range(K):
-        t = info_fracs[k]
-        b = boundaries[k]
-        z_eff = b['z_eff']
+        t = info_fracs[k].copy()
+        b = boundaries[k].copy()
+        z_eff = b['z_eff'].copy()
 
         if k > 0:
-            t_prev = info_fracs[k - 1]
+            t_prev = info_fracs[k - 1].copy()
             rho = math.sqrt(t_prev / t)
             sigma = math.sqrt(1 - t_prev / t)
             drift_inc = theta * (math.sqrt(t) - rho * math.sqrt(t_prev))
@@ -260,7 +260,7 @@ def compute_power_analytical(boundaries, info_fracs, theta, two_sided=False):
             # Propagate density
             new_density = np.zeros(N_GRID)
             for i in range(N_GRID):
-                zp = z_grid[i]
+                zp = z_grid[i].copy()
                 cond_means = rho * z_grid + drift_inc
                 cond_pdf = stats.norm.pdf((zp - cond_means) / sigma) / sigma
                 new_density[i] = np.sum(density * cond_pdf) * dz
@@ -303,8 +303,8 @@ def monte_carlo_power(boundaries, info_fracs, theta, n_sims, seed=42,
     t_prev = 0.0
 
     for k in range(K):
-        t = info_fracs[k]
-        b = boundaries[k]
+        t = info_fracs[k].copy()
+        b = boundaries[k].copy()
         n_active = int(active.sum())
         if n_active == 0:
             break

@@ -1,8 +1,10 @@
 """Shared Selenium fixtures for AdaptSim tests."""
-import os, sys, json, pytest
-sys.stdout = __import__('io').TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+import os
+
+import pytest
 
 from selenium import webdriver
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.chrome.options import Options
 
 HTML = os.path.join(os.path.dirname(__file__), '..', 'adaptsim.html')
@@ -14,7 +16,10 @@ def driver():
     opts.add_argument('--no-sandbox')
     opts.add_argument('--disable-gpu')
     opts.set_capability('goog:loggingPrefs', {'browser': 'ALL'})
-    d = webdriver.Chrome(options=opts)
+    try:
+        d = webdriver.Chrome(options=opts)
+    except WebDriverException as exc:
+        pytest.skip(f"Chrome WebDriver unavailable: {exc}")
     d.implicitly_wait(3)
     yield d
     d.quit()
@@ -22,6 +27,7 @@ def driver():
 @pytest.fixture(scope='session')
 def app_url():
     return 'file:///' + os.path.abspath(HTML).replace('\\', '/')
+
 
 def js(driver, script):
     return driver.execute_script('return ' + script)
