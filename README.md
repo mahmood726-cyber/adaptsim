@@ -1,5 +1,7 @@
 # AdaptSim
 
+[![ci](https://github.com/mahmood726-cyber/adaptsim/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/mahmood726-cyber/adaptsim/actions/workflows/ci.yml) [![codeql](https://github.com/mahmood726-cyber/adaptsim/actions/workflows/codeql.yml/badge.svg?branch=master)](https://github.com/mahmood726-cyber/adaptsim/actions/workflows/codeql.yml) [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![python: 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
+
 A browser-based simulator for adaptive group-sequential trial design. Reproduces rpact boundary calculations to four decimal places using a single-file HTML/JS app — no R, no Python, no install.
 
 **Live dashboard:** <https://mahmood726-cyber.github.io/adaptsim/>
