@@ -1,7 +1,10 @@
 """AdaptSim integration tests — adaptive trial design simulator."""
-import sys, time, json, pytest
+import sys
+import time
+
+import pytest
+
 sys.path.insert(0, __import__('os').path.dirname(__file__))
-from conftest import js
 
 @pytest.fixture(autouse=True)
 def load_app(driver, app_url):

@@ -8,10 +8,11 @@ Figure 3: Power vs effect size for different numbers of interim analyses
 All computations use the same formulas as adaptsim.html.
 """
 
-import sys
 import io
-import os
 import math
+import os
+import sys
+
 import numpy as np
 from scipy import stats
 
@@ -19,9 +20,10 @@ from scipy import stats
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
 import matplotlib
+
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from matplotlib.ticker import MultipleLocator, FuncFormatter
+from matplotlib.ticker import FuncFormatter, MultipleLocator
 
 # -- House style ---------------------------------------------------------------
 plt.rcParams.update({

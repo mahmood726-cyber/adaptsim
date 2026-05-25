@@ -2,7 +2,6 @@
 import os
 
 import pytest
-
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.chrome.options import Options
