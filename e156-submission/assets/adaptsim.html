@@ -604,7 +604,7 @@ body.dark .badge-warn { background: #3a3020; color: #d4a030; }
       </div>
       <div class="form-group">
         <label>
-          <input type="checkbox" id="customInfoFrac" style="margin-right:4px;"> Custom Information Fractions
+          <input type="checkbox" id="customInfoFrac" style="margin-right:4px;" aria-label="Custom Information Fractions"> Custom Information Fractions
         </label>
       </div>
     </div>
@@ -715,8 +715,8 @@ body.dark .badge-warn { background: #3a3020; color: #d4a030; }
     <div class="card-title"><span class="icon">&#127919;</span> Scenarios</div>
     <div class="form-row">
       <div class="form-group">
-        <label id="scenarioLabel">True Effect Sizes (comma-separated HRs)</label>
-        <input type="text" id="scenarioEffects" value="1.0, 0.90, 0.80, 0.74, 0.65" style="width:100%;">
+        <label id="scenarioLabel" for="scenarioEffects">True Effect Sizes (comma-separated HRs)</label>
+        <input type="text" id="scenarioEffects" value="1.0, 0.90, 0.80, 0.74, 0.65" style="width:100%;" aria-labelledby="scenarioLabel">
       </div>
       <div class="form-group">
         <label for="numSims">Simulations</label>
