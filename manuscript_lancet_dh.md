@@ -134,6 +134,6 @@ The authors declare no competing interests. AdaptSim is not affiliated with or e
 2. Lan KKG, DeMets DL. Discrete sequential boundaries for clinical trials. Biometrika. 1983;70(3):659-663.
 3. Wassmer G, Pahlke F. rpact: Confirmatory Adaptive Clinical Trial Design and Analysis. R package version 4.1. 2024.
 4. Anderson KM. gsDesign: Group Sequential Design. R package version 3.6. 2024.
-5. Pallmann P, Bedding AW, Choodari-Oskooei B, et al. Adaptive designs in clinical trials: why use them, and how to run and report them. BMC Med. 2018;16:29.
+5. Pallmann P, Bedding AW, Choodari-Oskooei B, et al. Adaptive designs in clinical trials: why use them, and how to run and report them. BMC Med. 2018;16:29. doi:10.1186/s12916-018-1017-7
 6. Armitage P, McPherson CK, Rowe BC. Repeated significance tests on accumulating data. J R Stat Soc Ser A. 1969;132(2):235-244.
 7. Chen YHJ, DeMets DL, Lan KKG. Increasing the sample size when the unblinded interim result is promising. Stat Med. 2004;23(7):1023-1038.
