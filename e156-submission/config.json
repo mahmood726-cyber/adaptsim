@@ -1,7 +1,7 @@
 {
   "title": "AdaptSim: A Browser-Based Simulator for Adaptive Group-Sequential Trial Design Matching rpact to Four Decimal Places",
   "slug": "adaptsim",
-  "path": "C:\\AdaptSim",
+  "path": "..",
   "type": "methods",
   "primary_estimand": "Boundary computation accuracy vs rpact (decimal places of agreement)",
   "certainty": "high",
