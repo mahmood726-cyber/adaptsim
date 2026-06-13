@@ -16,8 +16,9 @@ import sys
 import numpy as np
 from scipy import stats
 
-# UTF-8 stdout for Windows
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+# UTF-8 stdout for Windows (skip under pytest to avoid clobbering capture).
+if "pytest" not in sys.modules:
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
 import matplotlib
 
