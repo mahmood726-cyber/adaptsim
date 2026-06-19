@@ -5,5 +5,5 @@
 matplotlib>=3.8
 numpy>=1.24
 pytest>=8.0
-scipy>=1.11
+scipy>=1.17.1
 selenium>=4.0
